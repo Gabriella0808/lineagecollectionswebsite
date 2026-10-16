@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your Cart | Lineage Collections</title>
+  <meta name="description" content="Lineage Collections designs bedroom, dining, living room, lighting, storage and office furniture, sold through authorized dealers.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Announcement bar -->
+  <div class="announcement">
+    Sold through authorized dealers. <a href="/dealer-application.html">Apply for a dealer account</a>
+  </div>
+
+  <!-- Header -->
+  <header class="site-header is-transparent" id="siteHeader">
+    <div class="header-top">
+      <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+      </button>
+
+      <nav class="utility-nav" aria-label="Utility">
+        <a href="/showroom">Visit Our Showroom</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+
+      <a href="/" class="logo" aria-label="Lineage Collections home">
+        <img src="assets/logo/lineage-logo-black.svg" alt="Lineage Collections" class="logo-dark" width="190" height="66">
+        <img src="assets/logo/lineage-logo-white.svg" alt="" class="logo-light" width="190" height="66" aria-hidden="true">
+      </a>
+
+      <div class="header-actions">
+        <a href="search.html" class="action-link action-search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <span>Search</span>
+        </a>
+        <a href="wishlist.html" class="icon-btn wish-btn" aria-label="Wishlist"><span class="wish-count" hidden>0</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 5.65-7 10-7 10z"/></svg>
+        </a>
+        <a href="dealer-portal.html" class="action-link action-login">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <span>Dealer Login</span>
+        </a>
+        <a href="cart.html" class="icon-btn cart-btn" aria-label="Cart">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="m9.5 13 2 2 3-3.5"/></svg>
+          <span class="cart-count" id="cartCount" hidden>0</span>
+        </a>
+      </div>
+    </div>
+
+    <nav class="main-nav" aria-label="Main">
+      <ul>
+                <li class="has-mega">
+          <a href="/brands" aria-haspopup="true">Brands</a>
+          <div class="mega">
+            <div class="mega-inner">
+              <div class="mega-list">
+                <p class="mega-title">Our Brands</p>
+                <ul>
+                  <li><a href="/brands/seawinds">Sea Winds</a></li>
+                  <li><a href="/brands/finn-louise">Finn &amp; Louise</a></li>
+                  <li><a href="/brands/lux-lighting">Lux Lighting</a></li>
+                  <li><a href="/brands">View All</a></li>
+                </ul>
+              </div>
+
+              <a href="/brands/seawinds" class="mega-card">
+                <img src="assets/images/showroom.jpg" alt="" class="mega-card-img" loading="lazy">
+                <div class="mega-card-body">
+                  <img src="assets/logo/seawinds-logo.svg" alt="Seawinds" class="mega-card-logo">
+                  <p>Modern dining chairs</p>
+                </div>
+              </a>
+
+              <a href="/brands/finn-louise" class="mega-card">
+                <img src="assets/images/hero-living-room.jpg" alt="" class="mega-card-img" loading="lazy">
+                <div class="mega-card-body">
+                  <img src="assets/logo/finn-louise-logo.png" alt="Finn &amp; Louise" class="mega-card-logo">
+                  <p>Home accessories with Danish design</p>
+                </div>
+              </a>
+
+              <a href="/brands/lux-lighting" class="mega-card">
+                <img src="assets/images/brand-lux-lighting.jpg" alt="" class="mega-card-img" loading="lazy">
+                <div class="mega-card-body">
+                  <img src="assets/logo/lux-lighting-logo.svg" alt="Lux Lighting" class="mega-card-logo">
+                  <p>Scandinavian furniture with a minimalistic design</p>
+                </div>
+              </a>
+            </div>
+          </div>
+        </li>
+
+        <li class="has-mega">
+          <a href="shop.html?room=bedroom" aria-haspopup="true">Bedroom</a>
+          <div class="mega">
+            <div class="mega-inner mega-room">
+              <div class="mega-intro">
+                <p class="mega-heading">Bedroom</p>
+                <p class="mega-intro-title">Rest, beautifully made.</p>
+                <p class="mega-intro-text">Beds, nightstands, dressers and chests in coastal and classic finishes.</p>
+                <a href="shop.html?room=bedroom" class="mega-cta">Shop all Bedroom <span aria-hidden="true">&rarr;</span></a>
+              </div>
+
+              <div class="mega-col">
+                <p class="mega-heading">Furniture</p>
+                <ul>
+                  <li><a href="shop.html?room=bedroom&amp;type=Beds">Beds</a></li>
+                  <li><a href="shop.html?room=bedroom&amp;type=Cabinet%20Beds">Cabinet Beds</a></li>
+                  <li><a href="shop.html?room=bedroom&amp;type=Headboards">Headboards</a></li>
+                  <li><a href="shop.html?room=bedroom&amp;type=Nightstands">Nightstands</a></li>
+                  <li><a href="shop.html?room=bedroom&amp;type=Dressers">Dressers</a></li>
+                  <li><a href="shop.html?room=bedroom&amp;type=Chests">Chests</a></li>
+                  <li><a href="shop.html?room=bedroom&amp;type=Mirrors">Mirrors</a></li>
+                  <li><a href="shop.html?room=bedroom&amp;type=Benches">Benches</a></li>
+                </ul>
+              </div>
+
+              <div class="mega-col">
+                <p class="mega-heading">Collections</p>
+                <ul>
+                  <li><a href="shop.html?room=bedroom&amp;collection=Islamorada">Islamorada</a></li>
+                  <li><a href="shop.html?room=bedroom&amp;collection=Point%20Breeze">Point Breeze</a></li>
+                  <li><a href="shop.html?room=bedroom&amp;collection=Manhattan%20Valley">Manhattan Valley</a></li>
+                  <li><a href="shop.html?room=bedroom&amp;collection=Geneva">Geneva</a></li>
+                  <li><a href="shop.html?room=bedroom&amp;collection=Miramar">Miramar</a></li>
+                  <li><a href="shop.html?room=bedroom&amp;collection=Surfside">Surfside</a></li>
+                  <li><a href="shop.html?room=bedroom&amp;collection=Monaco">Monaco</a></li>
+                </ul>
+              </div>
+
+              <a href="shop.html?collection=Geneva" class="mega-feature">
+                <img src="assets/images/collection-geneva.jpg" alt="" loading="lazy">
+                <span class="mega-feature-text">
+                  <span class="mega-feature-eyebrow">Featured collection</span>
+                  <span class="mega-feature-title">Geneva</span>
+                  <span class="mega-feature-link">Shop the collection &rarr;</span>
+                </span>
+              </a>
+            </div>
+          </div>
+        </li>
+
+        <li class="has-mega">
+          <a href="shop.html?room=dining" aria-haspopup="true">Dining Room</a>
+          <div class="mega">
+            <div class="mega-inner mega-room">
+              <div class="mega-intro">
+                <p class="mega-heading">Dining Room</p>
+                <p class="mega-intro-title">Gather around.</p>
+                <p class="mega-intro-text">Tables, chairs and stools for everyday meals and long dinners.</p>
+                <a href="shop.html?room=dining" class="mega-cta">Shop all Dining Room <span aria-hidden="true">&rarr;</span></a>
+              </div>
+
+              <div class="mega-col">
+                <p class="mega-heading">Furniture</p>
+                <ul>
+                  <li><a href="shop.html?room=dining&amp;type=Dining%20Tables">Dining Tables</a></li>
+                  <li><a href="shop.html?room=dining&amp;type=Dining%20Chairs">Dining Chairs</a></li>
+                  <li><a href="shop.html?room=dining&amp;type=Stools">Stools</a></li>
+                </ul>
+              </div>
+
+              <div class="mega-col">
+                <p class="mega-heading">Pair it with</p>
+                <ul>
+                  <li><a href="shop.html?type=Credenzas%20%26%20Sideboards">Credenzas &amp; Sideboards</a></li>
+                  <li><a href="shop.html?type=Cabinets">Cabinets</a></li>
+                  <li><a href="shop.html?type=Table%20Lamps">Table Lamps</a></li>
+                </ul>
+              </div>
+
+              <a href="shop.html?room=dining" class="mega-feature">
+                <img src="assets/images/social-6.jpg" alt="" loading="lazy">
+                <span class="mega-feature-text">
+                  <span class="mega-feature-eyebrow">Room inspiration</span>
+                  <span class="mega-feature-title">The Dining Room</span>
+                  <span class="mega-feature-link">Shop dining &rarr;</span>
+                </span>
+              </a>
+            </div>
+          </div>
+        </li>
+
+        <li class="has-mega">
+          <a href="shop.html?room=living" aria-haspopup="true">Living Room</a>
+          <div class="mega">
+            <div class="mega-inner mega-room">
+              <div class="mega-intro">
+                <p class="mega-heading">Living Room</p>
+                <p class="mega-intro-title">Made for living in.</p>
+                <p class="mega-intro-text">Coffee tables, consoles and media pieces that pull a room together.</p>
+                <a href="shop.html?room=living" class="mega-cta">Shop all Living Room <span aria-hidden="true">&rarr;</span></a>
+              </div>
+
+              <div class="mega-col">
+                <p class="mega-heading">Furniture</p>
+                <ul>
+                  <li><a href="shop.html?room=living&amp;type=Coffee%20Tables">Coffee Tables</a></li>
+                  <li><a href="shop.html?room=living&amp;type=End%20%26%20Side%20Tables">End &amp; Side Tables</a></li>
+                  <li><a href="shop.html?room=living&amp;type=Consoles">Consoles</a></li>
+                  <li><a href="shop.html?room=living&amp;type=Entertainment%20Centers">Entertainment Centers</a></li>
+                  <li><a href="shop.html?room=living&amp;type=Accent%20Chairs">Accent Chairs</a></li>
+                </ul>
+              </div>
+
+              <div class="mega-col">
+                <p class="mega-heading">Pair it with</p>
+                <ul>
+                  <li><a href="shop.html?type=Table%20Lamps">Table Lamps</a></li>
+                  <li><a href="shop.html?type=Floor%20Lamps">Floor Lamps</a></li>
+                  <li><a href="shop.html?type=Cabinets">Cabinets</a></li>
+                  <li><a href="shop.html?type=Credenzas%20%26%20Sideboards">Credenzas &amp; Sideboards</a></li>
+                </ul>
+              </div>
+
+              <a href="shop.html?room=living" class="mega-feature">
+                <img src="assets/images/hero-living-room.jpg" alt="" loading="lazy">
+                <span class="mega-feature-text">
+                  <span class="mega-feature-eyebrow">Room inspiration</span>
+                  <span class="mega-feature-title">The Living Room</span>
+                  <span class="mega-feature-link">Shop living &rarr;</span>
+                </span>
+              </a>
+            </div>
+          </div>
+        </li>
+
+        <li class="has-mega">
+          <a href="shop.html?room=lighting" aria-haspopup="true">Lighting</a>
+          <div class="mega">
+            <div class="mega-inner mega-room">
+              <div class="mega-intro">
+                <p class="mega-heading">Lighting</p>
+                <p class="mega-intro-title">Set the mood.</p>
+                <p class="mega-intro-text">Table and floor lamps to finish every room, including our Lux Lighting brand.</p>
+                <a href="shop.html?room=lighting" class="mega-cta">Shop all Lighting <span aria-hidden="true">&rarr;</span></a>
+              </div>
+
+              <div class="mega-col">
+                <p class="mega-heading">Lamps</p>
+                <ul>
+                  <li><a href="shop.html?room=lighting&amp;type=Table%20Lamps">Table Lamps</a></li>
+                  <li><a href="shop.html?room=lighting&amp;type=Floor%20Lamps">Floor Lamps</a></li>
+                  <li><a href="/brands/lux-lighting">Lux Lighting</a></li>
+                </ul>
+              </div>
+
+              <div class="mega-col">
+                <p class="mega-heading">Pair it with</p>
+                <ul>
+                  <li><a href="shop.html?type=Nightstands">Nightstands</a></li>
+                  <li><a href="shop.html?type=End%20%26%20Side%20Tables">End &amp; Side Tables</a></li>
+                  <li><a href="shop.html?type=Consoles">Consoles</a></li>
+                </ul>
+              </div>
+
+              <a href="/brands/lux-lighting" class="mega-feature">
+                <img src="assets/images/brand-lux-lighting.jpg" alt="" loading="lazy">
+                <span class="mega-feature-text">
+                  <span class="mega-feature-eyebrow">Our brand</span>
+                  <span class="mega-feature-title">Lux Lighting</span>
+                  <span class="mega-feature-link">Discover Lux Lighting &rarr;</span>
+                </span>
+              </a>
+            </div>
+          </div>
+        </li>
+
+        <li class="has-mega">
+          <a href="shop.html?room=storage" aria-haspopup="true">Storage</a>
+          <div class="mega">
+            <div class="mega-inner mega-room">
+              <div class="mega-intro">
+                <p class="mega-heading">Storage</p>
+                <p class="mega-intro-title">A place for everything.</p>
+                <p class="mega-intro-text">Sideboards, cabinets and chests that keep things tidy and look good doing it.</p>
+                <a href="shop.html?room=storage" class="mega-cta">Shop all Storage <span aria-hidden="true">&rarr;</span></a>
+              </div>
+
+              <div class="mega-col">
+                <p class="mega-heading">Furniture</p>
+                <ul>
+                  <li><a href="shop.html?room=storage&amp;type=Credenzas%20%26%20Sideboards">Credenzas &amp; Sideboards</a></li>
+                  <li><a href="shop.html?room=storage&amp;type=Cabinets">Cabinets</a></li>
+                  <li><a href="shop.html?type=Chests">Chests</a></li>
+                  <li><a href="shop.html?type=Dressers">Dressers</a></li>
+                  <li><a href="shop.html?type=Entertainment%20Centers">Entertainment Centers</a></li>
+                </ul>
+              </div>
+
+              <div class="mega-col">
+                <p class="mega-heading">Pair it with</p>
+                <ul>
+                  <li><a href="shop.html?type=Mirrors">Mirrors</a></li>
+                  <li><a href="shop.html?type=Table%20Lamps">Table Lamps</a></li>
+                  <li><a href="shop.html?type=Consoles">Consoles</a></li>
+                </ul>
+              </div>
+
+              <a href="shop.html?room=storage" class="mega-feature">
+                <img src="assets/images/social-4.jpg" alt="" loading="lazy">
+                <span class="mega-feature-text">
+                  <span class="mega-feature-eyebrow">Room inspiration</span>
+                  <span class="mega-feature-title">Storage</span>
+                  <span class="mega-feature-link">Shop storage &rarr;</span>
+                </span>
+              </a>
+            </div>
+          </div>
+        </li>
+
+        <li class="has-mega">
+          <a href="shop.html?room=office" aria-haspopup="true">Office</a>
+          <div class="mega">
+            <div class="mega-inner mega-room">
+              <div class="mega-intro">
+                <p class="mega-heading">Office</p>
+                <p class="mega-intro-title">Work, well furnished.</p>
+                <p class="mega-intro-text">Desks and the pieces around them, for a home office that still feels like home.</p>
+                <a href="shop.html?room=office" class="mega-cta">Shop all Office <span aria-hidden="true">&rarr;</span></a>
+              </div>
+
+              <div class="mega-col">
+                <p class="mega-heading">Furniture</p>
+                <ul>
+                  <li><a href="shop.html?room=office&amp;type=Desks">Desks</a></li>
+                </ul>
+              </div>
+
+              <div class="mega-col">
+                <p class="mega-heading">Pair it with</p>
+                <ul>
+                  <li><a href="shop.html?type=Table%20Lamps">Table Lamps</a></li>
+                  <li><a href="shop.html?type=Floor%20Lamps">Floor Lamps</a></li>
+                  <li><a href="shop.html?type=Cabinets">Cabinets</a></li>
+                  <li><a href="shop.html?type=Credenzas%20%26%20Sideboards">Credenzas &amp; Sideboards</a></li>
+                  <li><a href="shop.html?type=Chests">Chests</a></li>
+                </ul>
+              </div>
+
+              <a href="contact.html" class="mega-help">
+                <span class="mega-feature-eyebrow">Need a hand?</span>
+                <span class="mega-feature-title">Planning a home office? Our team can help you choose.</span>
+                <span class="mega-feature-link">Talk to us &rarr;</span>
+              </a>
+            </div>
+          </div>
+        </li>
+                <li class="has-mega">
+          <a href="shop.html" aria-haspopup="true">Shop</a>
+          <div class="mega">
+            <div class="mega-inner mega-shop">
+              <div class="mega-col">
+                <p class="mega-heading">Shop by Room</p>
+                <ul>
+                  <li><a href="shop.html?room=bedroom">Bedroom</a></li>
+                  <li><a href="shop.html?room=living">Living Room</a></li>
+                  <li><a href="shop.html?room=dining">Dining Room</a></li>
+                  <li><a href="shop.html?room=lighting">Lighting</a></li>
+                  <li><a href="shop.html?room=storage">Storage</a></li>
+                  <li><a href="shop.html?room=office">Office</a></li>
+                  <li><a href="shop.html" class="mega-all">Shop All &rarr;</a></li>
+                </ul>
+              </div>
+
+              <div class="mega-col">
+                <p class="mega-heading">Bedroom</p>
+                <ul>
+                  <li><a href="shop.html?type=Beds">Beds</a></li>
+                  <li><a href="shop.html?type=Headboards">Headboards</a></li>
+                  <li><a href="shop.html?type=Nightstands">Nightstands</a></li>
+                  <li><a href="shop.html?type=Dressers">Dressers</a></li>
+                  <li><a href="shop.html?type=Chests">Chests</a></li>
+                  <li><a href="shop.html?type=Mirrors">Mirrors</a></li>
+                  <li><a href="shop.html?type=Cabinet%20Beds">Cabinet Beds</a></li>
+                </ul>
+              </div>
+
+              <div class="mega-col">
+                <p class="mega-heading">Living &amp; Dining</p>
+                <ul>
+                  <li><a href="shop.html?type=Coffee%20Tables">Coffee Tables</a></li>
+                  <li><a href="shop.html?type=End%20%26%20Side%20Tables">End &amp; Side Tables</a></li>
+                  <li><a href="shop.html?type=Consoles">Consoles</a></li>
+                  <li><a href="shop.html?type=Credenzas%20%26%20Sideboards">Credenzas &amp; Sideboards</a></li>
+                  <li><a href="shop.html?type=Dining%20Tables">Dining Tables</a></li>
+                  <li><a href="shop.html?type=Dining%20Chairs">Dining Chairs</a></li>
+                  <li><a href="shop.html?type=Table%20Lamps,Floor%20Lamps">Lamps</a></li>
+                </ul>
+              </div>
+
+              <div class="mega-col">
+                <p class="mega-heading">Collections</p>
+                <ul>
+                  <li><a href="shop.html?collection=Islamorada">Islamorada</a></li>
+                  <li><a href="shop.html?collection=Point%20Breeze">Point Breeze</a></li>
+                  <li><a href="shop.html?collection=Manhattan%20Valley">Manhattan Valley</a></li>
+                  <li><a href="shop.html?collection=Miramar">Miramar</a></li>
+                  <li><a href="shop.html?collection=Geneva">Geneva</a></li>
+                  <li><a href="shop.html?collection=Surfside">Surfside</a></li>
+                  <li><a href="shop.html?collection=Monaco">Monaco</a></li>
+                </ul>
+              </div>
+              <a href="shop.html?collection=Islamorada" class="mega-feature">
+                <img src="assets/images/collection-islamorada.jpg" alt="" loading="lazy">
+                <span class="mega-feature-text">
+                  <span class="mega-feature-eyebrow">Featured collection</span>
+                  <span class="mega-feature-title">Islamorada</span>
+                  <span class="mega-feature-link">Shop the collection &rarr;</span>
+                </span>
+              </a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Mobile navigation drawer -->
+  <div class="mobile-nav" id="mobileNav" hidden>
+    <div class="mobile-nav-panel">
+      <button class="icon-btn mobile-nav-close" id="menuClose" aria-label="Close menu">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+      <ul class="mobile-nav-primary">
+        <li><a href="/collections">Collections</a></li>
+        <li><a href="shop.html?room=bedroom">Bedroom</a></li>
+        <li><a href="shop.html?room=dining">Dining Room</a></li>
+        <li><a href="shop.html?room=living">Living Room</a></li>
+        <li><a href="shop.html?room=lighting">Lighting</a></li>
+        <li><a href="shop.html?room=storage">Storage</a></li>
+        <li><a href="shop.html?room=office">Office</a></li>
+        <li><a href="shop.html">Shop</a></li>
+      </ul>
+      <ul class="mobile-nav-secondary">
+        <li><a href="/showroom">Visit Our Showroom</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="dealer-portal.html">Dealer Login</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <main class="cart-page container">
+    <h1 class="display cart-page-title">Your Cart</h1>
+    <div id="cartPage"><!-- rendered by js/cart.js --></div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <a href="/" class="footer-logo" aria-label="Lineage Collections home">
+        <img src="assets/logo/lineage-logo-black.svg" alt="Lineage Collections" width="176" height="61">
+      </a>
+
+      <div class="footer-cols">
+        <div class="footer-col">
+          <h3>Dealer Resources</h3>
+          <ul>
+            <li><a href="/about">About</a></li>
+            <li><a href="/showroom">Showroom</a></li>
+            <li><a href="/collections">Collections</a></li>
+            <li><a href="/trade-services">Trade Services</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>The Company</h3>
+          <ul>
+            <li><a href="/about">About</a></li>
+            <li><a href="/showroom">Showroom</a></li>
+            <li><a href="/collections">Collections</a></li>
+            <li><a href="/services">Services</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Support</h3>
+          <ul>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/showroom">Showroom</a></li>
+            <li><a href="/collections">Collections</a></li>
+            <li><a href="/services">Services</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Resources</h3>
+          <ul>
+            <li><a href="shop.html?room=living">Living Room</a></li>
+            <li><a href="shop.html?room=dining">Dining Room</a></li>
+            <li><a href="shop.html?room=bedroom">Bedroom</a></li>
+            <li><a href="shop.html?room=lighting">Lighting</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>How To Buy</h3>
+          <ul>
+            <li><a href="/delivery-returns">Delivery &amp; Returns</a></li>
+            <li><a href="/track-order">Track Your Order</a></li>
+            <li><a href="/terms">Terms &amp; Conditions</a></li>
+            <li><a href="/privacy">Privacy Policy</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>Design for living, since 1997.</p>
+        <p class="footer-contact">
+          <a href="mailto:info@lineage-collections.com">info@lineage-collections.com</a><br>
+          <a href="tel:18008767123" class="plain">800-876-7123</a>
+        </p>
+        <p>&copy; <span id="year">2026</span> Lineage Collections. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/bigcommerce.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/wishlist.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
