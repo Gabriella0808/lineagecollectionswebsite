@@ -1,0 +1,7 @@
+{
+  // Static site served by Cloudflare Workers (deployed on every push to main).
+  "name": "lineagecollectionswebsite",
+  "compatibility_date": "2026-10-12",
+  "assets": { "directory": "." },
+  "observability": { "enabled": true }
+}
