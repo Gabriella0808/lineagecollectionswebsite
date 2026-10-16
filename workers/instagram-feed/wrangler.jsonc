@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lineage-instagram-feed",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-02",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Holds the current Instagram token so the weekly cron can rotate it.
+  // Create with: npx wrangler kv namespace create INSTAGRAM_KV  (then paste the id below)
+  "kv_namespaces": [
+    { "binding": "INSTAGRAM_KV", "id": "REPLACE_WITH_KV_NAMESPACE_ID" }
+  ],
+
+  // Refresh the token every Monday at 09:00 UTC (tokens expire after 60 days)
+  "triggers": { "crons": ["0 9 * * 1"] },
+
+  "vars": {
+    // Comma-separated list of sites allowed to read the feed. Use "*" while developing.
+    "ALLOWED_ORIGINS": "*"
+  },
+
+  "observability": { "enabled": true, "head_sampling_rate": 1 }
+}
