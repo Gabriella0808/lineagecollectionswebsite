@@ -56,7 +56,10 @@
 
   const marquee = document.querySelector('[data-marquee]');
   if (marquee) {
-    const names = (data.collections || []).map((c) => c.name.replace(/\s+Collection$/i, ''));
+    // data-words="A|B|C" sets the words (brand pages); otherwise the homepage collections.
+    const names = marquee.dataset.words
+      ? marquee.dataset.words.split('|')
+      : (data.collections || []).map((c) => c.name.replace(/\s+Collection$/i, ''));
     const words = [...names, 'Design for Living', 'Since 1997'];
     const group = () => `<div class="marquee-group">${[...words, ...words].map((w, i) =>
       `<span class="marquee-item${i % 2 ? ' is-outline' : ''}">${w.replace(/[&<>]/g, '')}</span><span class="marquee-star">&#10022;</span>`).join('')}</div>`;
@@ -143,7 +146,9 @@
   const PARALLAX = [
     { container: '.showroom-media', items: 'img', speed: -0.12 },
     { container: '.social-grid', items: '.social-tile:nth-child(even)', speed: -0.07 },
-    { container: '.social-grid', items: '.social-tile:nth-child(odd)', speed: 0.04 }
+    { container: '.social-grid', items: '.social-tile:nth-child(odd)', speed: 0.04 },
+    { container: '.brand-feature-media', items: '.f-main img', speed: 0.06 },
+    { container: '.brand-feature-media', items: '.f-inset', speed: -0.14 }
   ];
 
   /* ---------- Mouse: magnets, tilt ---------- */

@@ -367,21 +367,33 @@
       lightbox.innerHTML = `
         <button type="button" class="lightbox-close" aria-label="Close">&times;</button>
         <button type="button" class="lightbox-nav prev" aria-label="Previous photo">&lsaquo;</button>
-        <img alt="">
+        <div class="lightbox-stage"><img alt="" draggable="false"></div>
         <button type="button" class="lightbox-nav next" aria-label="Next photo">&rsaquo;</button>
-        <p class="lightbox-count"></p>`;
+        <p class="lightbox-count"></p>
+        <div class="lightbox-zoom">
+          <button type="button" data-zoom-step="-1" aria-label="Zoom out">&minus;</button>
+          <button type="button" class="lightbox-zoom-level" data-zoom-reset aria-label="Reset zoom">100%</button>
+          <button type="button" data-zoom-step="1" aria-label="Zoom in">+</button>
+        </div>`;
       document.body.appendChild(lightbox);
       lightbox.addEventListener('click', (e) => {
         if (e.target.closest('.prev')) step(-1);
         else if (e.target.closest('.next')) step(1);
-        else if (e.target === lightbox || e.target.closest('.lightbox-close')) closeLightbox();
+        else if (e.target.closest('[data-zoom-step]')) zoomBy(e.target.closest('[data-zoom-step]').dataset.zoomStep > 0 ? ZOOM_STEP : 1 / ZOOM_STEP);
+        else if (e.target.closest('[data-zoom-reset]')) setZoom(1);
+        else if (e.target.closest('.lightbox-close')) closeLightbox();
+        else if ((e.target === lightbox || e.target.classList.contains('lightbox-stage')) && zoom.scale === 1) closeLightbox();
       });
       document.addEventListener('keydown', (e) => {
         if (!lightbox.classList.contains('is-open')) return;
         if (e.key === 'Escape') closeLightbox();
         if (e.key === 'ArrowLeft') step(-1);
         if (e.key === 'ArrowRight') step(1);
+        if (e.key === '+' || e.key === '=') zoomBy(ZOOM_STEP);
+        if (e.key === '-' || e.key === '_') zoomBy(1 / ZOOM_STEP);
+        if (e.key === '0') setZoom(1);
       });
+      bindLightboxZoom();
     }
     const multi = images.length > 1;
     lightbox.querySelectorAll('.lightbox-nav').forEach((b) => { b.hidden = !multi; });
@@ -401,7 +413,102 @@
     img.src = images[activeImage].url;
     img.alt = images[activeImage].alt || product.name;
     lightbox.querySelector('.lightbox-count').textContent = images.length > 1 ? `${activeImage + 1} / ${images.length}` : '';
+    setZoom(1);
   }
+
+  /* Zoom: buttons, keys, wheel, click, pinch; drag to pan while zoomed */
+  const ZOOM_MIN = 1;
+  const ZOOM_MAX = 4;
+  const ZOOM_STEP = 1.5;
+  const zoom = { scale: 1, x: 0, y: 0 };
+
+  function applyZoom() {
+    const img = lightbox.querySelector('.lightbox-stage img');
+    const stage = lightbox.querySelector('.lightbox-stage');
+    // Keep the photo's edges from pulling away from the stage edges
+    const maxX = Math.max(0, (img.offsetWidth * zoom.scale - stage.clientWidth) / 2);
+    const maxY = Math.max(0, (img.offsetHeight * zoom.scale - stage.clientHeight) / 2);
+    zoom.x = Math.min(maxX, Math.max(-maxX, zoom.x));
+    zoom.y = Math.min(maxY, Math.max(-maxY, zoom.y));
+    img.style.transform = `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.scale})`;
+    lightbox.classList.toggle('is-zoomed', zoom.scale > 1);
+    lightbox.querySelector('.lightbox-zoom-level').textContent = `${Math.round(zoom.scale * 100)}%`;
+    lightbox.querySelector('[data-zoom-step="-1"]').disabled = zoom.scale <= ZOOM_MIN;
+    lightbox.querySelector('[data-zoom-step="1"]').disabled = zoom.scale >= ZOOM_MAX;
+  }
+  // Zoom to `scale`, keeping the point at (cx, cy) on screen fixed (defaults to the stage centre)
+  function setZoom(scale, cx, cy) {
+    const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, scale));
+    const rect = lightbox.querySelector('.lightbox-stage').getBoundingClientRect();
+    const px = cx === undefined ? 0 : cx - (rect.left + rect.width / 2);
+    const py = cy === undefined ? 0 : cy - (rect.top + rect.height / 2);
+    if (next === 1) { zoom.x = 0; zoom.y = 0; }
+    else {
+      zoom.x = px - (px - zoom.x) * (next / zoom.scale);
+      zoom.y = py - (py - zoom.y) * (next / zoom.scale);
+    }
+    zoom.scale = next;
+    applyZoom();
+  }
+  function zoomBy(factor, cx, cy) { setZoom(zoom.scale * factor, cx, cy); }
+
+  function bindLightboxZoom() {
+    const stage = lightbox.querySelector('.lightbox-stage');
+    const img = stage.querySelector('img');
+    const pointers = new Map();
+    let gesture = null;
+
+    stage.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      zoomBy(Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY);
+    }, { passive: false });
+
+    stage.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      stage.setPointerCapture(e.pointerId);
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pointers.size === 2) {
+        const [a, b] = [...pointers.values()];
+        gesture = { type: 'pinch', dist: Math.hypot(a.x - b.x, a.y - b.y), scale: zoom.scale, moved: true };
+      } else {
+        gesture = { type: 'pan', sx: e.clientX, sy: e.clientY, x: zoom.x, y: zoom.y, moved: false, onImg: e.target === img };
+      }
+    });
+    stage.addEventListener('pointermove', (e) => {
+      if (!pointers.has(e.pointerId) || !gesture) return;
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (gesture.type === 'pinch' && pointers.size === 2) {
+        const [a, b] = [...pointers.values()];
+        lightbox.classList.add('is-dragging');
+        setZoom(gesture.scale * Math.hypot(a.x - b.x, a.y - b.y) / gesture.dist, (a.x + b.x) / 2, (a.y + b.y) / 2);
+      } else if (gesture.type === 'pan') {
+        const dx = e.clientX - gesture.sx;
+        const dy = e.clientY - gesture.sy;
+        if (Math.abs(dx) + Math.abs(dy) > 4) gesture.moved = true;
+        if (zoom.scale > 1 && gesture.moved) {
+          lightbox.classList.add('is-dragging');
+          zoom.x = gesture.x + dx;
+          zoom.y = gesture.y + dy;
+          applyZoom();
+        }
+      }
+    });
+    const end = (e) => {
+      if (!pointers.has(e.pointerId)) return;
+      pointers.delete(e.pointerId);
+      lightbox.classList.remove('is-dragging');
+      if (e.type === 'pointerup' && gesture && gesture.type === 'pan' && !gesture.moved && gesture.onImg) {
+        // A plain click on the photo toggles between fitted and zoomed in on that spot
+        if (zoom.scale > 1) setZoom(1);
+        else setZoom(2.5, e.clientX, e.clientY);
+      }
+      gesture = pointers.size ? { type: 'none', moved: true } : null;
+    };
+    stage.addEventListener('pointerup', end);
+    stage.addEventListener('pointercancel', end);
+    window.addEventListener('resize', () => { if (lightbox.classList.contains('is-open')) applyZoom(); });
+  }
+
   function closeLightbox() {
     lightbox.classList.remove('is-open');
     document.body.classList.remove('no-scroll');

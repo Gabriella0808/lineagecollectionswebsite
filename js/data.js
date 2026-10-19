@@ -142,6 +142,13 @@ window.LINEAGE_DATA = {
     'Manhattan Valley': { image: 'assets/images/collection-manhattan-valley.jpg', brand: 'Finn & Louise' }
   },
 
+  // Room photos for collections on the brand pages (brand-*.html), on top of collectionBanners
+  // above. Collections without a photo show their best product photo instead.
+  collectionPhotos: {
+    'Chatham': 'assets/images/social-2.jpg',
+    'Monaco':  'assets/images/social-3.jpg'
+  },
+
   // The "Coming Soon" and "Closeouts" menu tabs. Each is a BigCommerce category, looked up by its
   // URL: add or remove products in that category in BigCommerce and the menu and the shop page
   // (shop.html?list=coming-soon) update on their own. The category must stay visible, and its URL
@@ -173,6 +180,10 @@ window.LINEAGE_DATA = {
     { title: 'Coming Soon', url: 'shop.html?list=coming-soon', keywords: 'coming soon new arrivals upcoming preorder pre-order' },
     { title: 'Closeouts', url: 'shop.html?list=closeouts', keywords: 'closeouts closeout clearance discontinued sale final' },
     { title: 'Shop All', url: 'shop.html', keywords: 'shop all products furniture catalog browse' },
+    { title: 'Our Brands', url: 'brands.html', keywords: 'brands sea winds seawinds finn louise lux lighting' },
+    { title: 'Sea Winds', url: 'brand-sea-winds.html', keywords: 'sea winds seawinds brand coastal furniture' },
+    { title: 'Finn & Louise', url: 'brand-finn-louise.html', keywords: 'finn louise brand bedroom dining' },
+    { title: 'Lux Lighting', url: 'brand-lux-lighting.html', keywords: 'lux lighting brand lamps table floor' },
     { title: 'Bedroom', url: 'shop.html?room=bedroom', keywords: 'bedroom beds nightstands dressers chests' },
     { title: 'Dining Room', url: 'shop.html?room=dining', keywords: 'dining tables chairs' },
     { title: 'Living Room', url: 'shop.html?room=living', keywords: 'living room sofas coffee tables' },
