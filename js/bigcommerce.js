@@ -163,6 +163,36 @@ window.LineageBC = (function () {
     if (!cached || Date.now() - cached.at > FRESH_FOR) fetchCatalog().catch(() => { /* try again later */ });
   }
 
+  // Products in a BigCommerce category, looked up by its URL (e.g. '/coming-soon/'), in the
+  // category's order. Resolves to [] if the category doesn't exist (yet) or is hidden.
+  async function categoryProducts(path, limit = 500) {
+    const products = [];
+    let after = null;
+    while (products.length < limit) {
+      const data = await query(`
+        query CategoryProducts($path: String!, $first: Int!, $after: String) {
+          site {
+            route(path: $path) {
+              node {
+                ... on Category {
+                  products(first: $first, after: $after) {
+                    pageInfo { hasNextPage endCursor }
+                    edges { node { ${PRODUCT_FIELDS} } }
+                  }
+                }
+              }
+            }
+          }
+        }`, { path, first: Math.min(50, limit - products.length), after });
+      const conn = data.site.route.node && data.site.route.node.products;
+      if (!conn) break;
+      conn.edges.forEach((e) => products.push(toProduct(e.node)));
+      if (!conn.pageInfo.hasNextPage) break;
+      after = conn.pageInfo.endCursor;
+    }
+    return products;
+  }
+
   // Everything the product page shows. Fields BigCommerce doesn't have yet come back empty,
   // and the page hides those sections until they're filled in.
   async function productDetail(sku) {
@@ -204,5 +234,5 @@ window.LineageBC = (function () {
     return product;
   }
 
-  return { enabled, query, productsBySku, searchProducts, allProducts, prefetchCatalog, productDetail };
+  return { enabled, query, productsBySku, searchProducts, allProducts, prefetchCatalog, categoryProducts, productDetail };
 })();

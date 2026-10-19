@@ -17,6 +17,9 @@
   const PAGE_SIZE = 24;
 
   const { ROOMS, classify, roomLabel } = window.LineageCatalog;
+  // Coming Soon / Closeouts: shop.html?list=coming-soon shows only the products in that
+  // BigCommerce category (see productLists in js/data.js).
+  const LISTS = data.productLists || {};
 
   const SORTS = {
     featured: 'Featured',
@@ -36,9 +39,10 @@
   let products = [];
   let bounds = { min: 0, max: 5000 };
   let shown = PAGE_SIZE;
+  let listSkus = null; // SKUs in the current Coming Soon / Closeouts category (null while loading)
 
   const state = {
-    room: '', types: [], collections: [], brands: [],
+    list: '', room: '', types: [], collections: [], brands: [],
     min: null, max: null, stock: false, photos: false,
     q: '', sort: 'featured', view: '3'
   };
@@ -46,6 +50,7 @@
   function readUrl() {
     const p = new URLSearchParams(location.search);
     const list = (k) => (p.get(k) ? p.get(k).split(',').filter(Boolean) : []);
+    state.list = LISTS[p.get('list')] ? p.get('list') : '';
     state.room = ROOMS.some((r) => r.slug === p.get('room')) ? p.get('room') : '';
     state.types = list('type');
     state.collections = list('collection');
@@ -61,6 +66,7 @@
 
   function writeUrl(push) {
     const p = new URLSearchParams();
+    if (state.list) p.set('list', state.list);
     if (state.room) p.set('room', state.room);
     if (state.types.length) p.set('type', state.types.join(','));
     if (state.collections.length) p.set('collection', state.collections.join(','));
@@ -81,6 +87,7 @@
 
   // Each check can be skipped, so a filter group's counts reflect every *other* active filter.
   function matches(p, skip) {
+    if (state.list && !(listSkus && listSkus.has(p.sku))) return false;
     if (skip !== 'room' && state.room && p.room !== state.room) return false;
     if (skip !== 'types' && state.types.length && !state.types.includes(p.type)) return false;
     if (skip !== 'collections' && state.collections.length && !state.collections.includes(p.collection)) return false;
@@ -153,7 +160,8 @@
           <a href="${escapeHtml(p.url)}" class="shop-card-media" tabindex="-1" aria-hidden="true">
             ${p.image ? `<img src="${escapeHtml(p.image)}" alt="" loading="lazy">` : '<span class="shop-card-placeholder">Image coming soon</span>'}
           </a>
-          ${p.inStock ? '' : '<span class="shop-badge">Out of stock</span>'}
+          ${state.list ? `<span class="shop-badge shop-badge-${state.list}">${escapeHtml(LISTS[state.list].badge)}</span>`
+            : p.inStock ? '' : '<span class="shop-badge">Out of stock</span>'}
           <button type="button" class="shop-card-add" data-sku="${escapeHtml(p.sku)}">Add to cart</button>
           <button type="button" class="wish-toggle" data-wish="${escapeHtml(p.sku)}" aria-pressed="false" aria-label="Save to wishlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 5.65-7 10-7 10z"/></svg></button>
           </div>
@@ -287,7 +295,7 @@
       </button>`).join('') + (chips.length > 1 ? '<button type="button" class="chip-clear" data-chip="all">Clear all</button>' : '');
   }
 
-    // A single collection (shop.html?collection=Islamorada) gets its own banner: photo and brand from
+  // A single collection (shop.html?collection=Islamorada) gets its own banner: photo and brand from
   // LINEAGE_DATA.collectionBanners. Collections not listed there keep the main shop photo.
   const DEFAULT_BANNER = el.bannerImg.getAttribute('src');
   const currentCollection = () => (state.collections.length === 1 ? state.collections[0] : '');
@@ -299,19 +307,23 @@
 
   function renderBanner() {
     const collection = currentCollection();
-    const src = (collection && bannerFor(collection).image) || DEFAULT_BANNER;
+    const pageList = LISTS[state.list];
+    const src = (pageList && pageList.image) || (collection && bannerFor(collection).image) || DEFAULT_BANNER;
     if (el.bannerImg.getAttribute('src') !== src) el.bannerImg.src = src;
   }
 
   function renderHeading(count) {
     renderBanner();
     const collection = currentCollection();
-    const label = collection ? `${collection} Collection` : state.room ? roomLabel(state.room) : 'Shop All';
+    const pageList = LISTS[state.list];
+    const label = pageList ? pageList.title : collection ? `${collection} Collection` : state.room ? roomLabel(state.room) : 'Shop All';
     el.title.textContent = label;
-    el.crumb.innerHTML = collection || state.room
+    el.crumb.innerHTML = pageList || collection || state.room
       ? `<a href="index.html">Home</a><span>/</span><a href="shop.html" data-room-link="">Shop</a><span>/</span>${escapeHtml(label)}`
       : '<a href="index.html">Home</a><span>/</span>Shop';
-    if (collection) {
+    if (pageList) {
+      el.subtitle.textContent = pageList.intro || '\u00a0';
+    } else if (collection) {
       const banner = bannerFor(collection);
       const pieces = products.filter((p) => (p.collection || '').toLowerCase() === collection.toLowerCase()).length;
       el.subtitle.textContent = banner.text || [banner.brand && `By ${banner.brand}`, `${pieces} pieces`].filter(Boolean).join(' · ');
@@ -321,17 +333,29 @@
       el.subtitle.textContent = `${roomTotal} pieces${collections ? ` across ${collections} collections` : ''}`;
     }
     document.title = `${label} | Lineage Collections`;
-    el.count.innerHTML = `<strong>${count}</strong> ${count === 1 ? 'product' : 'products'}`;
+    el.count.innerHTML = count == null ? '' : `<strong>${count}</strong> ${count === 1 ? 'product' : 'products'}`;
 
     document.querySelectorAll('.main-nav > ul > li > a').forEach((a) => {
       const href = a.getAttribute('href') || '';
-      const isCurrent = state.room ? href.endsWith(`room=${state.room}`) : href === 'shop.html';
+      const isCurrent = state.list ? href.endsWith(`list=${state.list}`) : state.room ? href.endsWith(`room=${state.room}`) : href === 'shop.html';
       if (isCurrent) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
   }
 
   function renderGrid(list) {
+    // Coming Soon / Closeouts with nothing in the category yet: a friendly note, not "no matches".
+    const pageList = LISTS[state.list];
+    if (!list.length && pageList && listSkus && !listSkus.size) {
+      el.grid.innerHTML = `
+        <div class="shop-empty">
+          <p class="display">${escapeHtml(pageList.title)}</p>
+          <p>${escapeHtml(pageList.empty)}</p>
+          <a href="shop.html" class="btn btn-dark">Shop all pieces</a>
+        </div>`;
+      el.more.innerHTML = '';
+      return;
+    }
     if (!list.length) {
       el.grid.innerHTML = `
         <div class="shop-empty">
@@ -354,6 +378,8 @@
   let currentList = [];
 
   function render() {
+    // Still finding out which products are in Coming Soon / Closeouts: keep the loading cards.
+    if (state.list && !listSkus) { renderHeading(null); return; }
     currentList = sorted(products.filter((p) => matches(p)));
     renderHeading(currentList.length);
     renderRooms();
@@ -474,8 +500,7 @@
     if (chip) { clearChip(chip.dataset.chip, chip.dataset.value); return; }
 
     const crumbShop = e.target.closest('[data-room-link]');
-    if (crumbShop) { e.preventDefault(); state.room = ''; state.collections = []; update(); return; }
-
+    if (crumbShop) { e.preventDefault(); state.list = ''; state.room = ''; state.collections = []; update(); return; }
 
     if (e.target.closest('[data-more]')) {
       shown += PAGE_SIZE;
@@ -541,16 +566,35 @@
     el.filterToggle.setAttribute('aria-expanded', String(!mobile.matches && !el.layout.classList.contains('filters-hidden')));
   });
 
-  window.addEventListener('popstate', () => { readUrl(); shown = PAGE_SIZE; render(); });
+  window.addEventListener('popstate', () => { readUrl(); shown = PAGE_SIZE; loadList(); render(); });
 
   /* ---------- Load ---------- */
 
   el.grid.innerHTML = '<article class="shop-card is-loading"><div class="shop-card-media-wrap"><div class="shop-card-media"></div></div><div class="shop-card-body"><p class="shop-card-name">&nbsp;</p></div></article>'.repeat(9);
 
+  // Coming Soon / Closeouts: fetch which products are in that BigCommerce category.
+  let listFor = '';
+  let listItems = [];
+  async function loadList() {
+    if (!state.list || listFor === state.list) return;
+    listFor = state.list;
+    listSkus = null;
+    let items = [];
+    try {
+      if (window.LineageBC && window.LineageBC.enabled) items = await window.LineageBC.categoryProducts(LISTS[state.list].category);
+    } catch (err) {
+      console.warn('Shop: could not load the product list.', err);
+    }
+    if (listFor !== state.list) return; // the visitor moved on while it loaded
+    listItems = items;
+    listSkus = new Set(items.map((p) => p.sku));
+    if (lastRaw) apply(lastRaw, false);
+  }
+
   async function load() {
     readUrl();
-    readUrl();
     renderBanner(); // show the collection's photo straight away, not after the products load
+    loadList();
     let raw;
     try {
       if (!window.LineageBC || !window.LineageBC.enabled) throw new Error('BigCommerce not configured');
@@ -568,8 +612,12 @@
     apply(raw, false);
   }
 
+  let lastRaw = null;
   function apply(raw, partial) {
-    products = raw.filter((p) => p && p.name).map(classify);
+    lastRaw = raw;
+    // A product just added to a list may be newer than the remembered catalog: include it anyway.
+    const extra = listItems.filter((item) => !raw.some((p) => p.sku === item.sku));
+    products = raw.concat(extra).filter((p) => p && p.name).map(classify);
     const prices = products.map((p) => p.price).filter((n) => n != null);
     if (prices.length) {
       bounds = { min: Math.floor(Math.min(...prices) / 10) * 10, max: Math.ceil(Math.max(...prices) / 100) * 100 };

@@ -54,6 +54,37 @@
     item.querySelector(':scope > a').focus();
   });
 
+  /* ---------- Coming Soon / Closeouts menus: a few live products from their BigCommerce category ---------- */
+  // Loaded the first time the visitor opens the menu, so other pages don't pay for it.
+  document.querySelectorAll('[data-product-list]').forEach((menu) => {
+    const list = (data.productLists || {})[menu.dataset.productList];
+    const box = menu.querySelector('[data-list-products]');
+    const item = menu.closest('.has-mega');
+    if (!list || !box || !item) return;
+
+    let started = false;
+    async function fill() {
+      if (started) return;
+      started = true;
+      let items = [];
+      try {
+        if (window.LineageBC && window.LineageBC.enabled) items = await window.LineageBC.categoryProducts(list.category, 4);
+      } catch (err) {
+        console.warn(`Menu: could not load ${list.title}.`, err);
+      }
+      box.innerHTML = items.length
+        ? items.map((p) => `
+          <a href="${escapeHtml(p.url)}" class="mega-product">
+            <span class="mega-product-media">${p.image ? `<img src="${escapeHtml(p.image)}" alt="" loading="lazy">` : ''}</span>
+            <span class="mega-product-name">${escapeHtml(p.name)}</span>
+            ${p.price == null ? '' : `<span class="mega-product-price">${formatPrice(p.price, p.currency)}</span>`}
+          </a>`).join('')
+        : `<p class="mega-products-empty">${escapeHtml(list.empty)}</p>`;
+    }
+    item.addEventListener('mouseenter', fill);
+    item.addEventListener('focusin', fill);
+  });
+
   /* ---------- Dealer portal: show / hide the site header ---------- */
   const portalToggle = document.getElementById('portalHeaderToggle');
   if (portalToggle) {

@@ -142,6 +142,26 @@ window.LINEAGE_DATA = {
     'Manhattan Valley': { image: 'assets/images/collection-manhattan-valley.jpg', brand: 'Finn & Louise' }
   },
 
+  // The "Coming Soon" and "Closeouts" menu tabs. Each is a BigCommerce category, looked up by its
+  // URL: add or remove products in that category in BigCommerce and the menu and the shop page
+  // (shop.html?list=coming-soon) update on their own. The category must stay visible, and its URL
+  // must match `category` here. `image` (optional) replaces the shop banner photo on that page.
+  productLists: {
+    'coming-soon': {
+      title: 'Coming Soon',
+      category: '/coming-soon/',
+      badge: 'Coming soon',
+      intro: 'A first look at new pieces arriving soon.',
+      empty: 'New pieces are on their way. Check back soon, or contact us to hear about them first.'
+    },
+    closeouts: {
+      title: 'Closeouts',
+      category: '/closeouts/',
+      badge: 'Closeout',
+      intro: 'Final quantities on discontinued pieces, while they last.',
+      empty: 'There are no closeouts right now. Check back soon.'
+    }
+  },
 
   // Pages the site search can suggest (alongside products and collections).
   searchPages: [
@@ -150,6 +170,8 @@ window.LINEAGE_DATA = {
     { title: 'Become a Dealer', url: '/dealer-application', keywords: 'apply dealer trade account wholesale' },
     { title: 'Virtual Showroom', url: '/showroom', keywords: 'showroom virtual tour visit' },
     { title: 'Your Cart', url: 'cart.html', keywords: 'cart bag quote basket' },
+    { title: 'Coming Soon', url: 'shop.html?list=coming-soon', keywords: 'coming soon new arrivals upcoming preorder pre-order' },
+    { title: 'Closeouts', url: 'shop.html?list=closeouts', keywords: 'closeouts closeout clearance discontinued sale final' },
     { title: 'Shop All', url: 'shop.html', keywords: 'shop all products furniture catalog browse' },
     { title: 'Bedroom', url: 'shop.html?room=bedroom', keywords: 'bedroom beds nightstands dressers chests' },
     { title: 'Dining Room', url: 'shop.html?room=dining', keywords: 'dining tables chairs' },
