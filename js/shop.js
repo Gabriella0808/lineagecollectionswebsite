@@ -20,6 +20,10 @@
   // Coming Soon / Closeouts: shop.html?list=coming-soon shows only the products in that
   // BigCommerce category (see productLists in js/data.js).
   const LISTS = data.productLists || {};
+  // Rooms with their own landing page (roomPages in js/data.js) get that room's look here too:
+  // their banner, and titles and cards that animate in.
+  const ROOM_PAGES = data.roomPages || {};
+  const roomPage = () => (!state.list && state.room && ROOM_PAGES[state.room]) || null;
 
   const SORTS = {
     featured: 'Featured',
@@ -152,10 +156,10 @@
 
   /* ---------- Rendering ---------- */
 
-  function cardHtml(p) {
+  function cardHtml(p, i = 0) {
     const eyebrow = [p.brands[0], p.collection].filter(Boolean).join(' · ');
     return `
-      <article class="shop-card">
+      <article class="shop-card" style="--ci:${i % PAGE_SIZE}">
         <div class="shop-card-media-wrap">
           <a href="${escapeHtml(p.url)}" class="shop-card-media" tabindex="-1" aria-hidden="true">
             ${p.image ? `<img src="${escapeHtml(p.image)}" alt="" loading="lazy">` : '<span class="shop-card-placeholder">Image coming soon</span>'}
@@ -308,18 +312,37 @@
   function renderBanner() {
     const collection = currentCollection();
     const pageList = LISTS[state.list];
-    const src = (pageList && pageList.image) || (collection && bannerFor(collection).image) || DEFAULT_BANNER;
+    const rp = roomPage();
+    const src = (pageList && pageList.image) || (collection && bannerFor(collection).image) || (rp && rp.banner) || DEFAULT_BANNER;
     if (el.bannerImg.getAttribute('src') !== src) el.bannerImg.src = src;
+    root.classList.toggle('is-room-mode', Boolean(rp));
+  }
+
+  // In a room's look the title rises letter by letter whenever it changes.
+  function setTitle(text) {
+    const animate = Boolean(roomPage());
+    if (el.title.dataset.text === text && el.title.dataset.animated === String(animate)) return;
+    el.title.dataset.text = text;
+    el.title.dataset.animated = String(animate);
+    if (!animate) { el.title.removeAttribute('aria-label'); el.title.textContent = text; return; }
+    el.title.setAttribute('aria-label', text);
+    let i = 0;
+    el.title.innerHTML = text.split(' ').map((word) => `<span class="tw" aria-hidden="true">${
+      Array.from(word).map((ch) => `<span class="tl" style="--li:${i++}">${escapeHtml(ch)}</span>`).join('')}</span>`).join(' ');
   }
 
   function renderHeading(count) {
     renderBanner();
     const collection = currentCollection();
     const pageList = LISTS[state.list];
-    const label = pageList ? pageList.title : collection ? `${collection} Collection` : state.room ? roomLabel(state.room) : 'Shop All';
-    el.title.textContent = label;
+    const rp = roomPage();
+    // In a room's look, one piece type becomes the title: Home / Shop / Bedroom / Beds
+    const piece = rp && !collection && state.types.length === 1 ? state.types[0] : '';
+    const label = pageList ? pageList.title : collection ? `${collection} Collection` : piece || (state.room ? roomLabel(state.room) : 'Shop All');
+    setTitle(label);
     el.crumb.innerHTML = pageList || collection || state.room
-      ? `<a href="index.html">Home</a><span>/</span><a href="shop.html" data-room-link="">Shop</a><span>/</span>${escapeHtml(label)}`
+      ? `<a href="index.html">Home</a><span>/</span><a href="shop.html" data-room-link="">Shop</a><span>/</span>${
+        piece ? `<a href="${escapeHtml(rp.page)}">${escapeHtml(roomLabel(state.room))}</a><span>/</span>` : ''}${escapeHtml(label)}`
       : '<a href="index.html">Home</a><span>/</span>Shop';
     if (pageList) {
       el.subtitle.textContent = pageList.intro || '\u00a0';
@@ -330,7 +353,9 @@
     } else {
       const collections = new Set(products.filter((p) => !state.room || p.room === state.room).map((p) => p.collection).filter(Boolean)).size;
       const roomTotal = products.filter((p) => !state.room || p.room === state.room).length;
-      el.subtitle.textContent = `${roomTotal} pieces${collections ? ` across ${collections} collections` : ''}`;
+      const text = `${roomTotal} pieces${collections ? ` across ${collections} collections` : ''}`;
+      if (rp) el.subtitle.innerHTML = `${escapeHtml(text)} <a href="${escapeHtml(rp.page)}" class="banner-link">Explore the ${escapeHtml(roomLabel(state.room).toLowerCase())} &rarr;</a>`;
+      else el.subtitle.textContent = text;
     }
     document.title = `${label} | Lineage Collections`;
     el.count.innerHTML = count == null ? '' : `<strong>${count}</strong> ${count === 1 ? 'product' : 'products'}`;
