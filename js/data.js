@@ -13,7 +13,8 @@ window.LINEAGE_DATA = {
   // Create a new token for the live domain before launch. Never put an admin API token here.
   bigcommerce: {
     storeHash: 'ybkui2vf1q',
-    storefrontToken: '8wrpkiby0gpc1g2uiwaggdokdsdg36k'
+        storefrontToken: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJjaWQiOlsxXSwiY29ycyI6WyJodHRwczovL2xpbmVhZ2Vjb2xsZWN0aW9uc3dlYnNpdGUuZ2FicmllbGxhLTUyNC53b3JrZXJzLmRldiIsImh0dHA6Ly8xMjcuMC4wLjE6NTUwMCJdLCJlYXQiOjE4OTM0NTYwMDAsImlhdCI6MTc5MjQyODY5NywiaXNzIjoiQkMiLCJqdGkiOiI3OWQxZDJjNi0zY2U2LTRmYjItOTRlMC1hYWMxZTVhZmExOWIiLCJzaWQiOjEwMDM0NjAyODQsInN1YiI6ImI3Nnd2aHRvN2NpNGFxMHY4NnZiNzJxMWV1aXM1aWYiLCJzdWJfdHlwZSI6MiwidG9rZW5fdHlwZSI6MX0.5AS_nDNwqV_ZqwXv5Z8RqdvMjote59t-ySGa0nE3iqHGMJem2aq4OH7BfBK-f3OF1vmOibQ-7hoUFYZnBZ1FkQ',
+
   },
 
   // New Intros = products with Acctivate's "NewProductIntroUnavail" box checked.
