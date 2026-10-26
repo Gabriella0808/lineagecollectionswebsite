@@ -182,7 +182,7 @@ window.LineageCart = (function () {
     const foot = drawer.querySelector('[data-cart-foot]');
     if (!items.length) {
       lines.innerHTML = '<li class="cart-empty"><p>Your cart is empty.</p></li>';
-      foot.innerHTML = '<a href="index.html#newIntros" class="btn btn-dark btn-block" data-cart-close>Continue shopping</a>';
+      foot.innerHTML = '<a href="shop.html" class="btn btn-dark btn-block" data-cart-close>Continue shopping</a>';
       return;
     }
     lines.innerHTML = items.map(lineHtml).join('');

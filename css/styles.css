@@ -461,6 +461,7 @@ p { margin: 0; }
 
 /* Pull the hero / page banner up underneath the header */
 .has-hero .hero,
+.cb-page .cb-hero,
 .has-hero .page-banner { margin-top: calc(-1 * (var(--header-top-h) + var(--header-nav-h))); }
 
 /* Mobile navigation drawer ------------------------------------------------- */
@@ -613,30 +614,75 @@ p { margin: 0; }
   100% { transform: scale(1.6); opacity: 0; }
 }
 
+/* The card: the product's photo, name, live price, Add to cart and View. It opens above the dot,
+   or below it near the top of the slide, and inwards near the sides (js/main.js sets the classes) */
 .hotspot-card {
+  --tx: -50%;
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 22px);
-  transform: translate(-50%, 6px);
-  width: max-content;
-  max-width: 240px;
-  padding: 10px 14px;
+  bottom: calc(100% + 18px);
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 14px;
+  align-items: center;
+  width: 320px;
+  padding: 12px;
+  border-radius: 14px;
   background: var(--color-white);
   color: var(--color-ink);
-  font-size: 13px;
-  font-weight: 400;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .2);
   opacity: 0;
+  transform: translate(var(--tx), 8px);
   pointer-events: none;
-  transition: opacity .25s var(--ease), transform .25s var(--ease);
+  transition: opacity .25s var(--ease), transform .3s var(--ease);
 }
-
+/* An invisible bridge to the dot, so the card stays open as the pointer moves onto it */
+.hotspot-card::after { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 22px; }
+.hotspot.is-below .hotspot-card { bottom: auto; top: calc(100% + 18px); transform: translate(var(--tx), -8px); }
+.hotspot.is-below .hotspot-card::after { top: auto; bottom: 100%; }
+.hotspot.is-left .hotspot-card { --tx: 0%; left: -16px; }
+.hotspot.is-right .hotspot-card { --tx: 0%; left: auto; right: -16px; }
+.hotspot:hover,
+.hotspot:focus-within,
+.hotspot.is-open { z-index: 6; }
 .hotspot:hover .hotspot-card,
 .hotspot:focus-within .hotspot-card,
 .hotspot.is-open .hotspot-card {
   opacity: 1;
-  transform: translate(-50%, 0);
+  transform: translate(var(--tx), 0);
   pointer-events: auto;
+}
+/* Closed after Add to cart, even while the pointer is still over it */
+.hotspot.is-dismissed .hotspot-card { opacity: 0; transform: translate(var(--tx), 8px); pointer-events: none; }
+.hs-media { display: grid; place-items: center; aspect-ratio: 1; overflow: hidden; border-radius: 10px; background: #f3eee7; }
+.hs-media img { width: 86%; height: 86%; object-fit: contain; mix-blend-mode: multiply; }
+.hs-body { display: grid; gap: 4px; min-width: 0; }
+.hs-name { font-size: 14px; line-height: 1.3; }
+.hs-name:hover { text-decoration: underline; text-underline-offset: 3px; }
+.hs-price { font-family: var(--font-display); font-size: 20px; }
+.hs-actions { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+.hs-add {
+  padding: 8px 12px;
+  border: 0;
+  background: var(--color-ink);
+  color: var(--color-white);
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color .3s var(--ease);
+}
+.hs-add:hover { background: #3a3a3a; }
+.hs-add:disabled { opacity: .4; cursor: default; }
+.hs-added-text { display: none; }
+.hs-add.is-added .hs-add-text { display: none; }
+.hs-add.is-added .hs-added-text { display: inline; }
+.hs-view { font-size: 12px; white-space: nowrap; border-bottom: 1px solid currentColor; padding-bottom: 1px; }
+@media (max-width: 600px) {
+  .hotspot-card { width: 250px; grid-template-columns: 70px 1fr; gap: 10px; padding: 10px; }
+  .hs-price { font-size: 18px; }
 }
 
 /* Arrows + dots */
@@ -2472,6 +2518,7 @@ p { margin: 0; }
   .has-hero .site-header.is-transparent:not(:hover):not(:has(:focus-visible)) .header-top { border-bottom-color: transparent; }
 
   .has-hero .hero,
+  .cb-page .cb-hero,
   .has-hero .page-banner { margin-top: calc(-1 * var(--header-top-h)); }
   .has-hero .page-banner { min-height: calc(clamp(280px, 30vw, 420px) + var(--header-top-h)); }
 
@@ -3567,8 +3614,12 @@ html.lenis, html.lenis body { height: auto; }
 /* ---------- Build your bedroom: the collection, photographed in the studio ---------- */
 .room-build { position: relative; background: #e9e1d6; }
 .room-build-sticky { position: relative; height: max(640px, 100vh); overflow: hidden; }
+/* Scrolling through the section brings the pieces in one by one (js/room.js) */
 .room-build.is-pinned { height: 340vh; }
 .room-build.is-pinned .room-build-sticky { position: sticky; top: var(--header-h); height: calc(100vh - var(--header-h)); }
+.room-back { padding-block: 16px; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; }
+.room-back a { color: var(--color-ink-soft); transition: color .3s var(--ease); }
+.room-back a:hover { color: var(--brand-accent); }
 
 /* Seamless studio backdrop: a soft spotlight that follows the mouse, and a floor that fades in */
 .room-studio {
@@ -3639,10 +3690,7 @@ html.lenis, html.lenis body { height: auto; }
   width: 100%;
   height: auto;
   transition: transform .6s var(--ease);
-  /* A polished studio floor: each piece is reflected below it (Chrome, Safari, Edge) */
-  -webkit-box-reflect: below 1px linear-gradient(transparent 70%, rgba(255, 255, 255, .22));
 }
-.room-piece[data-type="Mirrors"] img { -webkit-box-reflect: unset; }
 .room-piece:hover img { transform: translateY(-8px); }
 /* A soft shadow where each piece meets the floor */
 .room-piece::after {
@@ -3724,7 +3772,10 @@ html.lenis, html.lenis body { height: auto; }
 .room-build-intro h2 { font-size: clamp(34px, 3vw, 52px); line-height: 1.05; }
 .room-build-intro h2 em { font-style: italic; color: var(--brand-accent); }
 .room-build-foot { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 20px; }
-.room-build-sets { display: flex; flex-wrap: wrap; gap: 8px; max-width: 640px; }
+/* One row of collections that scrolls sideways, fading out at the edge */
+.room-build-sets { display: flex; gap: 8px; max-width: min(720px, 100%); overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); }
+.room-build-sets::-webkit-scrollbar { display: none; }
+.room-set { flex: 0 0 auto; white-space: nowrap; }
 .room-set {
   padding: 9px 16px;
   border: 1px solid rgba(26, 33, 48, .18);
@@ -3913,9 +3964,10 @@ html.lenis, html.lenis body { height: auto; }
 .room-fan-head .brand-eyebrow { color: var(--brand-accent); }
 .room-fan-head h2 { font-size: clamp(46px, 4.6vw, 80px); line-height: 1; }
 .room-fan-head p { color: var(--color-ink-soft); line-height: 1.65; }
-.room-fan { position: relative; height: clamp(420px, 37vw, 540px); margin-top: clamp(40px, 5vw, 72px); }
+/* As tall as a card (3:4), plus room for the hover lift and the tilt of the outer cards */
+.room-fan { position: relative; height: calc(clamp(200px, 19vw, 272px) * 4 / 3 + 64px); margin-top: clamp(16px, 2vw, 32px); }
 .fan-card {
-  --spread: clamp(74px, 9.4vw, 156px);
+  --spread: var(--fan-spread, clamp(74px, 9.4vw, 156px));
   position: absolute;
   left: 50%;
   bottom: 0;
@@ -3933,7 +3985,7 @@ html.lenis, html.lenis body { height: auto; }
   transition: transform 1s var(--ease) calc(var(--i) * 80ms), box-shadow .4s var(--ease), filter .4s var(--ease);
 }
 /* Dealt: each card swings out to its place in the fan */
-.room-fan.is-dealt .fan-card { transform: translateX(calc(var(--k) * var(--spread))) rotate(calc(var(--k) * 6deg)); }
+.room-fan.is-dealt .fan-card { transform: translateX(calc(var(--k) * var(--spread))) rotate(calc(var(--k) * var(--fan-rot, 6deg))); }
 .room-fan.is-settled .fan-card { transition-delay: 0s; }
 .room-fan.is-dealt .fan-card:hover,
 .room-fan.is-dealt .fan-card:focus-visible {
@@ -3948,6 +4000,35 @@ html.lenis, html.lenis body { height: auto; }
 .fan-card-media img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
 .fan-card-name { font-family: var(--font-display); font-size: clamp(24px, 2vw, 32px); line-height: 1.05; }
 .fan-card-count { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--color-muted); }
+/* A full hand (many collections): smaller cards */
+.room-fan.is-full { height: calc(clamp(170px, 13.5vw, 214px) * 4 / 3 + 64px); }
+.room-fan.is-full .fan-card { width: clamp(170px, 13.5vw, 214px); padding: 14px 14px 16px; }
+.room-fan.is-full .fan-card-name { font-size: clamp(19px, 1.5vw, 24px); }
+.room-fan.is-full .fan-card-count { font-size: 10px; letter-spacing: .12em; }
+
+/* ---------- Every piece in the picked collection ---------- */
+.room-skus { padding-block: clamp(80px, 9vw, 140px); }
+.room-skus-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 40px; margin-bottom: clamp(32px, 4vw, 56px); }
+.room-skus-head .brand-eyebrow { color: var(--brand-accent); }
+.room-skus-head h2 { margin-top: 12px; font-size: clamp(38px, 3.8vw, 64px); line-height: 1.02; }
+.room-skus-head h2 em { color: var(--brand-accent); }
+.room-skus-count { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--color-muted); }
+.room-skus-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(16px, 2vw, 28px) clamp(14px, 1.6vw, 22px); }
+.room-sku { display: grid; align-content: start; gap: 6px; }
+.room-skus-grid.is-in .room-sku { animation: rise .9s var(--ease) calc(min(var(--i), 12) * 60ms) backwards; }
+.room-sku-media { display: grid; place-items: center; aspect-ratio: 1; margin-bottom: 10px; overflow: hidden; border-radius: 14px; background: #f3eee7; }
+.room-sku-media img { width: 82%; height: 82%; object-fit: contain; mix-blend-mode: multiply; transition: transform .7s var(--ease); }
+.room-sku:hover .room-sku-media img { transform: scale(1.05); }
+.room-sku-type { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--brand-accent); }
+.room-sku-name { font-size: 15px; font-weight: 400; line-height: 1.4; }
+.room-sku-name a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.room-sku-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
+.room-sku-price { font-family: var(--font-display); font-size: 22px; }
+.room-sku-add { padding: 10px 16px; border: 0; background: var(--brand-deep); color: #fff; font: inherit; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; transition: background-color .3s var(--ease); }
+.room-sku-add:hover { background: var(--color-ink); }
+.room-sku-added-text { display: none; }
+.room-sku-add.is-added .room-sku-add-text { display: none; }
+.room-sku-add.is-added .room-sku-added-text { display: inline; }
 
 /* ---------- Closing: the sun is up ---------- */
 .room-wake {
@@ -4019,6 +4100,9 @@ html.lenis, html.lenis body { height: auto; }
   .fan-card,
   .room-fan.is-dealt .fan-card { position: relative; left: auto; flex: 0 0 72%; translate: none; transform: none; scroll-snap-align: center; }
   .room-hero-foot { flex-direction: column; gap: 20px; }
+  .room-skus-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .room-sku-foot { flex-direction: column; align-items: stretch; }
+  .room-sku-add { width: 100%; }
 }
 
 /* ==========================================================================
@@ -5580,7 +5664,7 @@ html.lenis, html.lenis body { height: auto; }
 .motion .home-hero-link { animation: rise 1.2s var(--ease) 1.6s backwards; }
 
 /* ---------- Shop by room: the room's photo fills the section ---------- */
-.home-rooms { position: relative; overflow: hidden; min-height: 100vh; margin-bottom: clamp(56px, 7vw, 104px); background: #15120f; color: #f6f1ea; }
+.home-rooms { position: relative; overflow: hidden; min-height: 100vh; margin-top: clamp(56px, 7vw, 104px); background: #15120f; color: #f6f1ea; }
 .home-rooms-photos img {
   position: absolute;
   inset: 0;
@@ -5644,4 +5728,291 @@ html.lenis, html.lenis body { height: auto; }
 @media (max-width: 900px) {
   .home-rooms-inner { grid-template-columns: 1fr; align-items: start; }
   .home-room { grid-template-columns: 34px minmax(0, 1fr) auto; }
+}
+
+/* ==========================================================================
+   Cabinet beds page (cabinet-beds.html) — scripts in js/cabinet-beds.js
+   A cabinet by day, a bed by night: the hero itself unfolds like one.
+   ========================================================================== */
+
+/* ---------- Hero: the living room splits, the lid lifts, the front folds down ---------- */
+.cb-hero { --fold: 0; position: relative; height: 300vh; background: #12161f; }
+.cb-hero-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; perspective: 1600px; color: #fff; }
+.cb-hero-night {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* The room behind starts dim and pushed back, and comes forward as the halves open */
+  filter: brightness(calc(.45 + var(--fold) * .55));
+  scale: calc(1.12 - var(--fold) * .12);
+}
+.cb-hero-fold { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; }
+.cb-lid,
+.cb-front { position: absolute; left: 0; right: 0; height: 50%; overflow: hidden; backface-visibility: hidden; }
+/* Each half shows its half of the same full-size photo */
+.cb-lid::before,
+.cb-front::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 200%;
+  background: var(--day) center / cover no-repeat;
+}
+.cb-lid { top: 0; transform-origin: 50% 0; transform: rotateX(calc(var(--fold) * 105deg)) translateZ(0); }
+.cb-lid::before { top: 0; }
+.cb-front { bottom: 0; transform-origin: 50% 100%; transform: rotateX(calc(var(--fold) * -105deg)) translateZ(0); }
+.cb-front::before { top: -100%; }
+/* Shade on each half as it turns, and a hairline where they part */
+.cb-lid::after,
+.cb-front::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #0b0e14;
+  opacity: calc(var(--fold) * .7);
+}
+.cb-lid { box-shadow: inset 0 -1px 0 rgba(255, 255, 255, calc(var(--fold) * 6)); }
+.cb-hero-sticky::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 13, 20, .55) 0%, rgba(10, 13, 20, 0) 26%, rgba(10, 13, 20, 0) 55%, rgba(10, 13, 20, .6) 100%);
+  pointer-events: none;
+}
+.cb-hero-content {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 2;
+  display: grid;
+  gap: 12px;
+  padding-bottom: calc(clamp(48px, 9vh, 100px) + 64px);
+  text-shadow: 0 2px 30px rgba(0, 0, 0, .3);
+}
+.cb-hero-content .brand-eyebrow { color: rgba(255, 255, 255, .85); }
+.cb-hero-title {
+  position: relative;
+  display: grid;
+  font-family: var(--font-display);
+  font-size: clamp(56px, 8vw, 140px);
+  font-weight: 400;
+  line-height: .95;
+  letter-spacing: -0.02em;
+  perspective: 800px;
+}
+/* The two titles turn over like a flap as day becomes night */
+.cb-word { grid-area: 1 / 1; transform-origin: 50% 50% -.4em; transition: transform .9s cubic-bezier(.65, 0, .25, 1), opacity .5s var(--ease); }
+.cb-word.is-night { font-style: italic; transform: rotateX(-90deg); opacity: 0; }
+.cb-hero.is-night .cb-word.is-day { transform: rotateX(90deg); opacity: 0; }
+.cb-hero.is-night .cb-word.is-night { transform: none; opacity: 1; }
+.cb-hero-tagline { font-family: var(--font-display); font-size: clamp(22px, 2vw, 32px); font-style: italic; }
+.cb-hero .hero-cue { z-index: 3; opacity: calc(1 - var(--fold) * 4); }
+.motion .cb-hero-title { animation: room-focus 2s var(--ease) .2s backwards; }
+.motion .cb-hero-content .brand-eyebrow,
+.motion .cb-hero-tagline { animation: rise 1.2s var(--ease) 1s backwards; }
+
+/* ---------- Shared heads ---------- */
+.cb-section-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 18px 40px; margin-bottom: clamp(32px, 4vw, 56px); }
+.cb-section-head .brand-eyebrow { color: var(--brand-accent); }
+.cb-section-head h2 { max-width: 760px; margin-top: 12px; font-size: clamp(40px, 4vw, 68px); line-height: 1.02; }
+.cb-hint { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); }
+
+/* ---------- Choose your finish ---------- */
+.cb-finishes-section { padding-block: clamp(90px, 10vw, 150px); background: #f4f1ec; }
+.cb-finishes { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.cb-finish { display: grid; align-content: start; gap: 6px; }
+.cb-finish-media { display: grid; place-items: center; aspect-ratio: 4 / 3; margin-bottom: 12px; overflow: hidden; border-radius: 18px; background: #fff; }
+.cb-finish-media img { width: 78%; height: 80%; object-fit: contain; transition: transform .9s var(--ease); }
+.cb-finish:hover .cb-finish-media img { transform: scale(1.04); }
+.cb-finish-col { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--brand-accent); }
+.cb-finish-name { font-family: var(--font-display); font-size: clamp(28px, 2.6vw, 40px); font-weight: 400; line-height: 1.08; }
+.cb-finish-name a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.cb-finish-price { font-family: var(--font-display); font-size: 28px; }
+.cb-finish-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 8px; }
+.cb-finish-view { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; border-bottom: 1px solid currentColor; padding-bottom: 3px; }
+.cb-added-text { display: none; }
+[data-add].is-added .cb-add-text { display: none; }
+[data-add].is-added .cb-added-text { display: inline; }
+
+/* ---------- Closing ---------- */
+.cb-close { padding-block: clamp(110px, 13vw, 200px); text-align: center; background: #141a26; color: #eef0f4; }
+.cb-close-inner { display: grid; justify-items: center; gap: 22px; }
+.cb-close .brand-eyebrow { color: #c9a874; }
+.cb-close h2 { font-size: clamp(56px, 7vw, 124px); line-height: 1; font-style: italic; }
+
+@media (max-width: 900px) {
+  .cb-hero { height: 220vh; }
+  .cb-finishes { grid-template-columns: 1fr; }
+}
+
+/* ==========================================================================
+   Cabinet beds page, continued — real footage, a day in one room, and what's hidden
+   inside (cabinet-beds.html, js/cabinet-beds.js)
+   ========================================================================== */
+
+.cb2-page { --bone: #f2ede4; --ink2: #1b1f27; --sea: #2f5d7c; background: var(--bone); }
+.cb2-eyebrow { font-size: 12px; letter-spacing: .24em; text-transform: uppercase; color: var(--sea); }
+
+/* ---------- Real footage ---------- */
+.cb2-film { position: relative; height: 520vh; background: #0e1116; }
+.cb2-film-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; color: #fff; }
+.cb2-film-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 60% 50%;
+  filter: saturate(.92) contrast(1.06) brightness(.94);
+  /* Comes up out of black as the section arrives */
+  opacity: clamp(0, calc(var(--p, 0) * 14), 1);
+  scale: calc(1.08 - min(var(--p, 0) * 1.2, .08));
+}
+.cb2-film-sticky::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(8, 10, 14, .45) 0%, rgba(8, 10, 14, 0) 22%, rgba(8, 10, 14, 0) 50%, rgba(8, 10, 14, .75) 100%),
+    radial-gradient(120% 90% at 50% 50%, transparent 55%, rgba(8, 10, 14, .45) 100%);
+  pointer-events: none;
+}
+.cb2-film-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 18px;
+  text-align: center;
+  opacity: clamp(0, calc(1 - (var(--p, 0) - .03) * 22), 1);
+  scale: calc(1 + var(--p, 0) * 1.5);
+}
+.cb2-film-intro .cb2-eyebrow { color: #c9d8e4; }
+.cb2-film-intro h2 { font-size: clamp(56px, 8vw, 140px); line-height: .95; }
+.cb2-film-hud {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(28px, 6vh, 64px);
+  z-index: 2;
+  display: grid;
+  gap: 22px;
+  opacity: clamp(0, calc((var(--p, 0) - .06) * 20), 1);
+}
+.cb2-film-chapter { min-height: 1.1em; font-size: clamp(44px, 6vw, 104px); line-height: 1; overflow: hidden; }
+.cb2-film-chapter span { display: inline-block; animation: cb2-chapter .9s var(--ease) both; }
+@keyframes cb2-chapter { from { opacity: 0; translate: 0 70%; filter: blur(6px); } }
+.cb2-film-meta { display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 24px; }
+.cb2-film-time { font-size: 12px; letter-spacing: .16em; font-variant-numeric: tabular-nums; color: rgba(255, 255, 255, .8); padding-top: 1px; }
+.cb2-film-bar { display: flex; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.cb2-film-bar li { display: grid; gap: 10px; min-width: 0; }
+.cb2-film-bar i { display: block; height: 2px; background: #fff; transform-origin: 0 50%; transform: scaleX(0); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
+.cb2-film-bar li { background: linear-gradient(rgba(255, 255, 255, .25), rgba(255, 255, 255, .25)) top / 100% 2px no-repeat; }
+.cb2-film-bar span { overflow: hidden; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; text-overflow: ellipsis; color: rgba(255, 255, 255, .45); transition: color .4s var(--ease); }
+.cb2-film-bar li.is-on span { color: #fff; }
+html:not(.motion) .cb2-film { height: auto; }
+html:not(.motion) .cb2-film-sticky { position: relative; height: 70vh; }
+html:not(.motion) .cb2-film-intro,
+html:not(.motion) .cb2-film-hud { display: none; }
+
+/* ---------- 24 hours ---------- */
+.cb2-day { --sky: var(--bone); --card: min(30vw, 440px); position: relative; height: 500vh; background: var(--sky); color: var(--ink2); }
+.cb2-day.is-dark { color: #eef1f6; }
+.cb2-day-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; display: grid; grid-template-rows: auto 1fr; grid-template-columns: minmax(0, 1fr); padding-top: calc(var(--header-h, 112px) + 12px); }
+.cb2-day-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; }
+.cb2-day.is-dark .cb2-eyebrow { color: #9fbdd3; }
+.cb2-clock {
+  font-family: var(--font-display);
+  font-size: clamp(64px, 9vw, 156px);
+  line-height: .85;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.cb2-clock small { margin-left: .12em; font-size: .3em; font-style: italic; letter-spacing: 0; }
+.cb2-day-track {
+  display: flex;
+  align-items: center;
+  gap: clamp(28px, 5vw, 90px);
+  justify-self: start;
+  width: max-content;
+  padding-inline: calc(50vw - var(--card) / 2);
+  will-change: transform;
+}
+.cb2-beat { width: var(--card); display: grid; gap: 10px; opacity: .38; scale: .9; transition: opacity .7s var(--ease), scale .9s var(--ease); }
+.cb2-beat.is-on { opacity: 1; scale: 1; }
+.cb2-beat-media { height: min(52vh, 560px); overflow: hidden; border-radius: 3px; background: rgba(0, 0, 0, .06); }
+.cb2-beat-media img { width: 100%; height: 100%; object-fit: cover; will-change: transform; }
+.cb2-beat-time { margin-top: 8px; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; opacity: .65; }
+.cb2-beat-title { font-size: clamp(28px, 2.6vw, 42px); line-height: 1.05; }
+.cb2-beat-text { max-width: 34ch; font-size: 15px; line-height: 1.6; opacity: .75; }
+html:not(.motion) .cb2-day { height: auto; }
+html:not(.motion) .cb2-day-sticky { position: relative; height: auto; padding-block: 120px 80px; }
+html:not(.motion) .cb2-day-track { width: auto; overflow-x: auto; padding-inline: var(--gutter); }
+
+/* ---------- Hidden in plain sight ---------- */
+.cb2-hidden { position: relative; height: 420vh; background: #fff; }
+.cb2-hidden-sticky { position: sticky; top: 0; height: 100vh; display: flex; align-items: center; padding-top: var(--header-h, 112px); }
+.cb2-hidden-inner { display: grid; grid-template-columns: minmax(260px, .75fr) minmax(0, 1.25fr); gap: clamp(32px, 6vw, 100px); align-items: center; width: 100%; }
+.cb2-hidden-copy { display: grid; gap: 18px; }
+.cb2-hidden-n { font-family: var(--font-display); font-size: 22px; font-style: italic; color: rgba(27, 31, 39, .5); }
+.cb2-hidden-texts { display: grid; }
+.cb2-hidden-text { grid-area: 1 / 1; display: grid; gap: 14px; opacity: 0; translate: 0 30px; transition: opacity .6s var(--ease), translate .8s var(--ease); pointer-events: none; }
+.cb2-hidden-text.is-past { translate: 0 -30px; }
+.cb2-hidden-text.is-on { opacity: 1; translate: 0 0; pointer-events: auto; }
+.cb2-hidden-text h2 { font-size: clamp(36px, 3.6vw, 60px); line-height: 1.02; }
+.cb2-hidden-text p { max-width: 36ch; font-size: 16px; line-height: 1.65; color: rgba(27, 31, 39, .72); }
+.cb2-hidden-stage { position: relative; width: min(100%, 72vh); justify-self: center; aspect-ratio: 1000 / 1010; }
+.cb2-hidden-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+.cb2-hidden-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.cb2-hidden-lines line { stroke: var(--sea); stroke-width: 1.2; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .7s var(--ease); }
+.cb2-hidden-lines line.is-on { stroke-dashoffset: 0; transition-delay: .1s; }
+.cb2-spot {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(47, 93, 124, .5), 0 2px 10px rgba(0, 0, 0, .15);
+  transition: background-color .4s var(--ease), scale .5s var(--ease);
+}
+.cb2-spot::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; border: 1px solid var(--sea); opacity: 0; }
+.cb2-spot.is-on { background: var(--sea); scale: 1.15; }
+.cb2-spot.is-on::after { animation: cb2-ping 1.8s var(--ease) infinite; }
+@keyframes cb2-ping { from { opacity: .8; scale: .6; } to { opacity: 0; scale: 1.9; } }
+.cb2-lens {
+  position: absolute;
+  width: 36%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background-repeat: no-repeat;
+  box-shadow: 0 0 0 6px #fff, 0 0 0 7px rgba(47, 93, 124, .35), 0 30px 60px rgba(0, 0, 0, .18);
+  clip-path: circle(0 at 50% 50%);
+  opacity: 0;
+  scale: .7;
+  transition: clip-path .8s var(--ease), opacity .4s var(--ease), scale .9s var(--ease);
+}
+.cb2-lens.is-on { clip-path: circle(60% at 50% 50%); opacity: 1; scale: 1; transition-delay: .25s; }
+html:not(.motion) .cb2-hidden { height: auto; }
+html:not(.motion) .cb2-hidden-sticky { position: relative; height: auto; padding-block: 120px; }
+
+@media (max-width: 900px) {
+  .cb2-film { height: 420vh; }
+  .cb2-film-video { object-position: 64% 50%; }
+  .cb2-film-bar span { display: none; }
+  .cb2-day { --card: 78vw; }
+  .cb2-day-sticky { padding-top: calc(var(--header-top-h) + 16px); }
+  .cb2-day-head { display: grid; gap: 4px; align-items: start; }
+  .cb2-clock { font-size: 64px; }
+  .cb2-beat-media { height: 44vh; }
+  .cb2-hidden-inner { grid-template-columns: 1fr; gap: 12px; }
+  .cb2-hidden-sticky { padding-top: calc(var(--header-top-h) + 8px); }
+  .cb2-hidden-stage { width: min(100%, 46vh); order: -1; }
+  .cb2-hidden-text h2 { font-size: 30px; }
+  .cb2-hidden-text p { font-size: 15px; }
 }

@@ -1,17 +1,20 @@
 /*
- * Lineage Collections — room pages (bedroom.html). Styles: "Room pages" in css/styles.css.
+ * Lineage Collections — room pages (bedroom.html, bedroom-collection.html). Styles: "Room pages"
+ * in css/styles.css.
  *
  * The bedroom page tells the story of a night, from switching the lamps on to getting ready in
  * the morning. Everything product-related comes live from BigCommerce:
  *
  *   [data-light-switch]   the hero's light switch (scrolling also turns the lamps on)
- *   [data-build-stage]    "Build your bedroom": one collection photographed in a studio; the
- *                         pieces fly in as you scroll and move in depth with the mouse;
- *                         [data-build-sets] switches collection
+ *   [data-fan]            "Pick your mood": collections fanned out like a hand of cards; each
+ *                         opens bedroom-collection.html?set=…
+ *   [data-build-stage]    (bedroom-collection.html) "Build your bedroom": the collection
+ *                         photographed in a studio; the pieces arrive and move in depth with the
+ *                         mouse; [data-build-sets] switches collection
+ *   [data-skus]           (bedroom-collection.html) every piece in the collection, with Add to cart
  *   [data-story]          "A night in your bedroom": a clock runs from evening to morning and the
  *                         sky changes with each [data-chapter]; [data-chapter-products] fill in
  *   [data-pieces]         "Shop by piece" tiles
- *   [data-fan]            collections fanned out like a hand of cards
  *   [data-count]          live numbers (pieces, power)
  *
  * Only cut-out photos (product on white) are used in the studio and on the cards, so a room
@@ -117,6 +120,8 @@
   ];
   // How wide a headboard is in the straight-on set (% of the set); the bed photo is scaled to it
   const HEADBOARD_W = 26;
+  const SIZES = (window.LINEAGE_DATA && window.LINEAGE_DATA.pieceSizes) || {};
+  const SIZE_DEFAULTS = (window.LINEAGE_DATA && window.LINEAGE_DATA.pieceSizeDefaults) || { Beds: 66, Nightstands: 24, Dressers: 62, Mirrors: 34, Chests: 36 };
   // The order the pieces arrive in as you scroll
   const ARRIVAL = ['Beds', 'Nightstands', 'Dressers', 'Mirrors', 'Chests'];
 
@@ -185,7 +190,9 @@
           }
           const bw = maxX - minX + 1;
           const bh = maxY - minY + 1;
-          resolve({ symmetry: both / either, fill: filled / (bw * bh), aspect: bw / bh, detail: edges / (filled || 1) });
+          // (a close-up runs off the edge of the photo: it's never the whole piece)
+          const cropped = minX < 3 || minY < 3 || maxX > w - 4 || maxY > h - 4;
+          resolve({ symmetry: both / either, fill: filled / (bw * bh), aspect: bw / bh, detail: edges / (filled || 1), cropped });
         } catch (e) {
           resolve(null);
         }
@@ -205,7 +212,7 @@
         const shapes = await Promise.all(urls.map(async (url) => ({ url, shape: await outline(url) })));
         const main = shapes[0] && shapes[0].shape;
         const front = shapes.slice(1)
-          .filter(({ shape }) => shape && shape.symmetry >= 0.96 && shape.fill >= 0.62
+          .filter(({ shape }) => shape && !shape.cropped && shape.symmetry >= 0.96 && shape.fill >= 0.62
             // (a mirror's front view may be turned landscape, as it hangs on the dresser)
             && (!main || ((p.type === 'Mirrors' || (shape.aspect >= main.aspect * 0.7 && shape.aspect <= main.aspect * 1.6)) && shape.detail >= main.detail * 0.7)))
           .sort((a, b) => b.shape.detail - a.shape.detail)[0];
@@ -247,6 +254,48 @@
   }
 
   const transparent = new Map();
+  // The pale floor shadow under a piece's feet: grey, colourless pixels in the bottom tenth of the
+  // piece that touch the cleared background
+  function clearFloor(px, w, h) {
+    let top = h, bottom = -1, sat = 0, n = 0;
+    for (let p = 0; p < w * h; p++) {
+      if (!px[p * 4 + 3]) continue;
+      sat += Math.max(px[p * 4], px[p * 4 + 1], px[p * 4 + 2]) - Math.min(px[p * 4], px[p * 4 + 1], px[p * 4 + 2]);
+      n += 1;
+      const y = (p - (p % w)) / w;
+      if (y < top) top = y;
+      bottom = y;
+    }
+    if (bottom < 0) return;
+    const from = Math.round(bottom - (bottom - top) * 0.1);
+    // Coloured furniture is never grey, so its shadow can be cleared down to a darker grey
+    const light = sat / (n || 1) > 22 ? 140 : 196;
+    const pale = (p) => {
+      const r = px[p * 4], g = px[p * 4 + 1], b = px[p * 4 + 2];
+      return px[p * 4 + 3] && Math.max(r, g, b) - Math.min(r, g, b) < 10 && r * 0.3 + g * 0.59 + b * 0.11 > light;
+    };
+    const stack = [];
+    for (let y = from; y <= bottom; y++) {
+      for (let x = 0; x < w; x++) {
+        const p = y * w + x;
+        if (!pale(p)) continue;
+        const near = [p - 1, p + 1, p - w, p + w].some((q) => q >= 0 && q < w * h && !px[q * 4 + 3]);
+        if (near) stack.push(p);
+      }
+    }
+    while (stack.length) {
+      const p = stack.pop();
+      if (!pale(p)) continue;
+      px[p * 4 + 3] = 0;
+      const x = p % w;
+      const y = (p - x) / w;
+      if (y < from) continue;
+      if (x > 0) stack.push(p - 1);
+      if (x < w - 1) stack.push(p + 1);
+      if (y > from) stack.push(p - w);
+      if (y < bottom) stack.push(p + w);
+    }
+  }
   function withoutBackground(url) {
     if (!transparent.has(url)) {
       transparent.set(url, new Promise((resolve) => {
@@ -263,7 +312,10 @@
             ctx.drawImage(img, 0, 0);
             const data = ctx.getImageData(0, 0, w, h);
             const px = data.data;
-            clearBackground(px, w, h);
+            // Already cut out (a transparent image)? Then its own edges are the furniture's
+            let cutOut = false;
+            for (let p = 3; p < px.length; p += 4 * 97) if (px[p] < 250) { cutOut = true; break; }
+            if (!cutOut) clearBackground(px, w, h);
             // Not white furniture? Then also clear the pale floor shadow around it
             let sum = 0, count = 0;
             for (let p = 0; p < w * h; p += 7) {
@@ -271,7 +323,8 @@
               sum += px[p * 4] * 0.3 + px[p * 4 + 1] * 0.59 + px[p * 4 + 2] * 0.11;
               count += 1;
             }
-            if (count && sum / count < 196) clearBackground(px, w, h, 214);
+            if (!cutOut && count && sum / count < 196) clearBackground(px, w, h, 214);
+            if (!cutOut) clearFloor(px, w, h);
             // Soften the outline: light pixels next to the removed background fade out
             for (let p = w; p < w * (h - 1); p++) {
               if (px[p * 4 + 3] === 0) continue;
@@ -334,6 +387,25 @@
   const finishOf = (p) => (p.sku.split('-').pop() || '').slice(0, 4).toUpperCase();
   const PIECE_WORDS = /^(\d|bed|beds|mirror|chest|dresser|nightstand|nighstand|headboard|storage|non|queen|king|cabinet|woven|electrified)/i;
 
+  // The first of these products that has a straight-on photo (one supplied in js/data.js first)
+  async function firstFront(list) {
+    const supplied = list.find((p) => FRONT_PHOTOS[p.sku]);
+    if (supplied) return supplied;
+    for (const p of list) if (await frontPhoto(p)) return p;
+    return null;
+  }
+
+  // The rest of a set's pieces, each the collection's own product with a straight-on photo. A
+  // type with no straight-on photo is left out rather than shown at an angle.
+  async function resolvePieces(set) {
+    if (set.resolved) return;
+    await Promise.all(SLOTS.filter((s) => s.type !== 'Beds').map(async (s) => {
+      const piece = await firstFront(set.pool.filter((p) => p.type === s.type));
+      if (piece) set.pieces[s.type] = piece;
+    }));
+    set.resolved = true;
+  }
+
   async function findSets(products) {
     const groups = new Map();
     products.forEach((p) => {
@@ -343,24 +415,36 @@
       groups.get(key).push(p);
     });
 
+    // Pieces whose finish code has no bed of its own (Islamorada's mirror is "…-BLANC") belong
+    // with every set of their collection
+    const strays = new Map();
+    groups.forEach((list, key) => {
+      if (list.some((p) => p.type === 'Beds')) return;
+      const collection = key.split('|')[0];
+      strays.set(collection, (strays.get(collection) || []).concat(list));
+    });
+
     const candidates = await Promise.all(Array.from(groups.entries()).map(async ([key, list]) => {
       const collection = key.split('|')[0];
-      const pieces = {};
-      await Promise.all(SLOTS.map(async (s) => {
-        const ofType = list.filter((p) => p.type === s.type);
-        // A piece with a front photo supplied in js/data.js is the one to show
-        pieces[s.type] = ofType.find((p) => FRONT_PHOTOS[p.sku]) || await firstCutout(ofType);
-      }));
+      // Everything in the studio is photographed straight on, so the bed must have a front photo
+      const bed = await firstFront(list.filter((p) => p.type === 'Beds'));
+      if (!bed) return null;
+      const pool = list.concat(strays.get(collection) || []);
       // The word after the collection name, if it is a finish ("Monaco Bleu 5 Drawer Chest" -> Bleu)
       const word = (list[0].name.slice(collection.length).trim().split(/\s+/)[0] || '');
       const finish = /^[A-Z][a-z]+$/.test(word) && !PIECE_WORDS.test(word) ? word : '';
-      return { collection, finish, pieces, filled: SLOTS.filter((s) => pieces[s.type]).length };
+      return {
+        collection, code: key.split('|')[1], finish, pool, straight: true,
+        pieces: { Beds: bed },
+        filled: SLOTS.filter((s) => pool.some((p) => p.type === s.type)).length
+      };
     }));
 
-    // A set needs at least a bed, a nightstand and a dresser. When a collection comes in two
-    // finishes that its product names can't tell apart, keep only its most complete set.
+    // Every collection with a bed is a set (the studio shows whichever other pieces it has). When a
+    // collection comes in two finishes that its product names can't tell apart, keep only its most
+    // complete set.
     const usable = candidates
-      .filter((c) => c.pieces.Beds && c.pieces.Nightstands && c.pieces.Dressers)
+      .filter(Boolean)
       .sort((a, b) => b.filled - a.filled || a.collection.localeCompare(b.collection));
     const seen = new Map();
     const result = [];
@@ -372,11 +456,13 @@
       result.push(c);
     });
     result.forEach((c) => { c.name = c.finish && seen.get(c.collection).length > 1 ? `${c.collection} ${c.finish}` : c.collection; });
-    return result.slice(0, 12);
+    return result;
   }
 
   async function showSet(set, animate) {
     current = set;
+    await resolvePieces(set);
+    if (current !== set) return;
     // Straight-on when the bed has a front view (set.straight), otherwise the angled catalogue shot
     const layout = set.straight ? STRAIGHT : SLOTS;
     const images = {};
@@ -388,28 +474,46 @@
     }));
     if (current !== set) return; // another collection was picked meanwhile
 
-    // Straight on: centre the headboard, and tuck a nightstand against each side of it
+    // Straight on: every piece at its real size (js/data.js pieceSizes, in inches). The headboard
+    // sits in the middle with a nightstand against each side, the dresser (mirror on top) to the
+    // left and the chest to the right; then the whole row is scaled to fit the studio and centred.
     const xs = {};
     const widths = {};
     if (set.straight && images.Beds) {
-      const bed = layout.find((s) => s.type === 'Beds');
-      const stand = layout.find((s) => s.type === 'Nightstands');
+      const inches = (type) => {
+        const p = set.pieces[type];
+        return p ? (SIZES[p.sku] || SIZE_DEFAULTS[type]) : 0;
+      };
       const [hs, he] = images.Beds.top;
-      // Size the bed by its headboard, so a photo that includes the whole made-up bed (wider than
-      // its headboard) comes out at the same real-world scale as the nightstands beside it
-      const bw = Math.min(58, HEADBOARD_W / Math.max(he - hs, 0.3));
-      widths.Beds = bw;
-      const left = 50 - ((hs + he) / 2) * bw;
-      xs.Beds = left + bw / 2;
-      // A nightstand against each side of the headboard, but never hidden behind the bedding:
-      // at most a fifth of it tucks behind the bed's widest point
-      xs.standLeft = Math.min(left + hs * bw - stand.w / 2 + 0.5, left - stand.w * 0.3);
-      xs.standRight = Math.max(left + he * bw + stand.w / 2 - 0.5, left + bw + stand.w * 0.3);
-    }
-
-    // A landscape mirror hangs across the dresser: most of its width
-    if (set.straight && images.Mirrors && images.Mirrors.aspect > 1.1) {
-      widths.Mirrors = layout.find((s) => s.type === 'Dressers').w * 0.72;
+      const hw = inches('Beds');
+      const bedW = hw / Math.max(he - hs, 0.3); // the whole photo, bedding and footboard included
+      const bedX = (0.5 - (hs + he) / 2) * bedW; // its centre, from the headboard's centre
+      const sw = inches('Nightstands');
+      const dw = inches('Dressers');
+      const cw = inches('Chests');
+      const GAP = 10;
+      // A nightstand each side of the bed, against the headboard but clear of the footboard and
+      // bedding (the bed's widest point), so none of it is hidden
+      const standL = Math.min(-hw / 2 - sw / 2 + 1, bedX - bedW / 2 - sw / 2 - 2);
+      const standR = Math.max(hw / 2 + sw / 2 - 1, bedX + bedW / 2 + sw / 2 + 2);
+      const dresserX = (sw ? standL - sw / 2 : bedX - bedW / 2) - GAP - dw / 2;
+      const chestX = (sw ? standR + sw / 2 : bedX + bedW / 2) + GAP + cw / 2;
+      const left = Math.min(bedX - bedW / 2, dw ? dresserX - dw / 2 : Infinity, sw ? standL - sw / 2 : Infinity);
+      const right = Math.max(bedX + bedW / 2, cw ? chestX + cw / 2 : -Infinity, sw ? standR + sw / 2 : -Infinity);
+      // % of the studio's width per inch: as large as fits, with the headboard no wider than before
+      const k = Math.min(HEADBOARD_W / hw, 94 / (right - left));
+      const at = (x) => 50 + (x - (left + right) / 2) * k;
+      widths.Beds = bedW * k;
+      xs.Beds = at(bedX);
+      widths.Nightstands = sw * k;
+      xs.standLeft = at(standL);
+      xs.standRight = at(standR);
+      widths.Dressers = dw * k;
+      xs.Dressers = at(dresserX);
+      widths.Mirrors = inches('Mirrors') * k;
+      xs.Mirrors = dw ? at(dresserX) : at(standL);
+      widths.Chests = cw * k;
+      xs.Chests = at(chestX);
     }
 
     studioSet.innerHTML = layout.filter((s) => set.pieces[s.type]).map((s) => {
@@ -482,10 +586,11 @@
   function paintBuild() {
     if (!current || !studioSet) return;
     const pieces = studioSet.querySelectorAll('.room-piece');
-    // Pieces arrive in ARRIVAL order (a pair of nightstands together); a missing type is skipped
+    // Pieces arrive in ARRIVAL order (a pair of nightstands together); a missing type is skipped.
+    // The first (the bed) is already standing when the page opens, so the studio is never empty.
     const orders = Array.from(new Set(Array.from(pieces).map((x) => Number(x.dataset.order)))).sort((a, b) => a - b);
     const n = orders.length;
-    const at = buildProgress() * (n + 0.8); // how many have arrived (fractional while arriving)
+    const at = 1 + buildProgress() * (n - 0.2); // how many have arrived (fractional while arriving)
     pieces.forEach((el) => {
       el.style.setProperty('--t', clamp(at - orders.indexOf(Number(el.dataset.order)), 0, 1).toFixed(3));
     });
@@ -515,7 +620,7 @@
     setsBox.addEventListener('click', (e) => {
       const b = e.target.closest('[data-set]');
       const set = b && sets.find((s) => s.name === b.dataset.set);
-      if (set && set !== current) showSet(set, true).then(paintBuild);
+      if (set && set !== current) pickSet(set);
     });
   }
 
@@ -617,32 +722,52 @@
 
   const fan = document.querySelector('[data-fan]');
   const FAN_COLORS = ['#e9e1d4', '#dde5e8', '#efe2d4', '#e3e0ea', '#e7e4d9', '#f1e6db', '#dde4dc'];
+  let roomProducts = [];
 
-  async function renderFan(products) {
+  // The products in a set's collection (only its own finish when the collection comes in two)
+  function setProducts(set) {
+    const twoFinishes = sets.filter((x) => x.collection === set.collection).length > 1;
+    return roomProducts.filter((p) => p.collection === set.collection && (!twoFinishes || finishOf(p) === set.code));
+  }
+
+  // The bed on a collection's card: its made-up, straight-on photo (js/data.js frontPhotos)
+  const bedCard = (p) => FRONT_PHOTOS[p.sku] || p.image;
+
+  // Spread the hand to fit the screen however many cards it holds: how far apart the cards sit,
+  // and how much each one tilts
+  function spreadFan() {
+    const n = fan.children.length;
+    const card = fan.firstElementChild;
+    if (n < 2 || !card) return;
+    fan.classList.toggle('is-full', n > 8);
+    const half = (n - 1) / 2;
+    const rot = Math.min(6, 24 / (n - 1));
+    // Each card turns about a point below it (transform-origin 50% 130%), which carries the outer
+    // ones further out: leave room for that
+    const swing = card.offsetHeight * 1.3 * Math.sin((half * rot * Math.PI) / 180);
+    const room = fan.clientWidth / 2 - card.offsetWidth / 2 - 24 - swing;
+    fan.style.setProperty('--fan-spread', `${Math.min(156, room / half).toFixed(1)}px`);
+    fan.style.setProperty('--fan-rot', `${rot.toFixed(2)}deg`);
+  }
+
+  // One card per bed collection; each opens its own page
+  function renderFan() {
     if (!fan) return;
-    const groups = new Map();
-    products.forEach((p) => {
-      if (!p.collection) return;
-      if (!groups.has(p.collection)) groups.set(p.collection, []);
-      groups.get(p.collection).push(p);
-    });
-    const top = Array.from(groups.entries()).sort((a, b) => b[1].length - a[1].length).slice(0, 7);
-    const cards = await Promise.all(top.map(async ([name, list]) => ({
-      name,
-      count: list.length,
-      // A bed shows the collection best; fall back to any cut-out piece
-      pick: (await firstCutout(list.filter((p) => p.type === 'Beds'))) || (await firstCutout(list))
-    })));
-    const shown = cards.filter((c) => c.pick);
+    const shown = sets;
     // The middle card sits on top, the others fan out behind it to either side
     const mid = (shown.length - 1) / 2;
     fan.style.setProperty('--n', shown.length);
-    fan.innerHTML = shown.map((c, i) => `
-      <a href="${escapeHtml(shopUrl({ collection: c.name }))}" class="fan-card${i > mid ? ' is-right' : ''}" style="--i:${i};--k:${(i - mid).toFixed(1)};--card:${FAN_COLORS[i % FAN_COLORS.length]};z-index:${Math.round(20 - Math.abs(i - mid) * 2)}">
-        <span class="fan-card-media"><img src="${escapeHtml(c.pick.image)}" alt="" loading="lazy"></span>
+    fan.innerHTML = shown.map((c, i) => {
+      const count = setProducts(c).length;
+      return `
+      <a href="bedroom-collection.html?set=${encodeURIComponent(c.name)}" data-set="${escapeHtml(c.name)}" class="fan-card${i > mid ? ' is-right' : ''}" style="--i:${i};--k:${(i - mid).toFixed(1)};--card:${FAN_COLORS[i % FAN_COLORS.length]};z-index:${Math.round(20 - Math.abs(i - mid) * 2)}">
+        <span class="fan-card-media"><img src="${escapeHtml(bedCard(c.pieces.Beds))}" alt="" loading="lazy"></span>
         <span class="fan-card-name">${escapeHtml(c.name)}</span>
-        <span class="fan-card-count">${c.count} bedroom ${c.count === 1 ? 'piece' : 'pieces'}</span>
-      </a>`).join('');
+        <span class="fan-card-count">${count} bedroom ${count === 1 ? 'piece' : 'pieces'}</span>
+      </a>`;
+    }).join('');
+    spreadFan();
+    window.addEventListener('resize', spreadFan);
     // Deal the cards out when the fan scrolls into view
     if ('IntersectionObserver' in window) {
       const io = new IntersectionObserver(([entry]) => {
@@ -658,6 +783,60 @@
     }
   }
 
+  // Show a collection: its bedroom in the studio, then every piece in it underneath. The address
+  // keeps the collection, so the page can be shared or reloaded.
+  async function pickSet(set) {
+    renderSkus(set);
+    const url = new URL(window.location.href);
+    url.searchParams.set('set', set.name);
+    history.replaceState(null, '', url);
+    document.title = `${set.name} Bedroom | Lineage Collections`;
+    // Bring the collection's button into view in the row
+    const btn = Array.from(setsBox.querySelectorAll('[data-set]')).find((b) => b.dataset.set === set.name);
+    if (btn) setsBox.scrollTo({ left: btn.offsetLeft - (setsBox.clientWidth - btn.offsetWidth) / 2, behavior: 'smooth' });
+    if (set !== current) await showSet(set, true);
+    paintBuild();
+  }
+
+  /* ---------- Every piece in the collection ---------- */
+
+  const skus = document.querySelector('[data-skus]');
+  const TYPE_ORDER = ['Beds', 'Nightstands', 'Dressers', 'Mirrors', 'Chests'];
+  const rank = (t) => (TYPE_ORDER.indexOf(t) + 1 || TYPE_ORDER.length + 1);
+  let skuList = [];
+
+  function renderSkus(set) {
+    if (!skus) return;
+    skuList = setProducts(set).slice().sort((a, b) => rank(a.type) - rank(b.type) || (a.price || 0) - (b.price || 0));
+    skus.querySelector('[data-skus-name]').textContent = set.name;
+    skus.querySelector('[data-skus-count]').textContent = `${skuList.length} ${skuList.length === 1 ? 'piece' : 'pieces'}`;
+    const grid = skus.querySelector('[data-skus-grid]');
+    grid.innerHTML = skuList.map((p, i) => `
+      <article class="room-sku" style="--i:${i}">
+        <a href="${escapeHtml(p.url)}" class="room-sku-media">${p.image ? `<img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy">` : ''}</a>
+        <p class="room-sku-type">${escapeHtml(p.type || '')}</p>
+        <h3 class="room-sku-name"><a href="${escapeHtml(p.url)}">${escapeHtml(p.name)}</a></h3>
+        <div class="room-sku-foot">
+          <span class="room-sku-price">${p.price == null ? 'Price on request' : money(p.price, p.currency)}</span>
+          <button type="button" class="room-sku-add" data-add="${escapeHtml(p.sku)}"><span class="room-sku-add-text">Add to cart</span><span class="room-sku-added-text">Added</span></button>
+        </div>
+      </article>`).join('');
+    // Deal the cards in
+    grid.classList.remove('is-in');
+    void grid.offsetWidth;
+    grid.classList.add('is-in');
+  }
+  if (skus) {
+    skus.addEventListener('click', (e) => {
+      const add = e.target.closest('[data-add]');
+      const p = add && skuList.find((x) => x.sku === add.dataset.add);
+      if (!p || !window.LineageCart) return;
+      window.LineageCart.add(p, 1);
+      add.classList.add('is-added');
+      setTimeout(() => add.classList.remove('is-added'), 1800);
+    });
+  }
+
   // Shared with the other room pages (js/living.js): photo helpers
   window.LineageRoom = { cutouts, firstCutout, frontPhoto, withoutBackground, largeImage };
 
@@ -671,21 +850,17 @@
       const products = raw.map(Catalog.classify).filter((p) => p.room === room && !/display/i.test(p.name));
       const counts = { pieces: products.length, power: products.filter((p) => POWER.test(p.name)).length };
       document.querySelectorAll('[data-count]').forEach((el) => { el.textContent = counts[el.dataset.count] ?? el.textContent; });
+      roomProducts = products;
       renderPieces(products);
       renderChapters(products);
-      renderFan(products);
-      if (!build) return;
+      if (!fan && !build) return;
       sets = await findSets(products);
-      if (!sets.length) { build.hidden = true; return; }
-      // Straight-on sets only: collections whose bed has a front-view photo. (If fewer than three
-      // have one, angled sets are shown too, after the straight ones.)
-      await Promise.all(sets.map(async (set) => { set.straight = Boolean(await frontPhoto(set.pieces.Beds)); }));
-      const straightSets = sets.filter((x) => x.straight);
-      sets = (straightSets.length >= 3 ? straightSets : straightSets.concat(sets.filter((x) => !x.straight))).slice(0, 6);
+      if (!sets.length) { if (build) build.hidden = true; return; }
+      renderFan();
+      if (!build) return;
       setsBox.innerHTML = sets.map((s) => `<button type="button" class="room-set" data-set="${escapeHtml(s.name)}" role="tab" aria-selected="false">${escapeHtml(s.name)}</button>`).join('');
-      await showSet(sets[0], false);
-      measure();
-      paintBuild();
+      const wanted = new URLSearchParams(window.location.search).get('set');
+      await pickSet(sets.find((x) => x.name === wanted) || sets[0]);
     } catch (err) {
       console.warn('Room page: could not load products.', err);
       page.classList.add('is-offline');

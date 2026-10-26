@@ -35,47 +35,63 @@ window.LINEAGE_DATA = {
   // Contact form endpoint (e.g. a Formspree URL). Leave empty to open the visitor's email app instead.
   contactFormUrl: '',
 
+  // Home page carousel. Each hotspot sits on the piece in the photo: x and y are % of the photo
+  // itself (js/main.js keeps them on the piece however the photo is cropped to fit the screen).
   collections: [
     {
       name: 'Islamorada Collection',
       brand: 'Finn & Louise',
-      url: '/collections/islamorada',
+      url: 'shop.html?collection=Islamorada',
       image: 'assets/images/collection-islamorada.jpg',
-      alt: 'Islamorada bedroom with shutter-panel headboard and nightstands',
+      alt: 'Islamorada bedroom with shutter-panel bed, dresser and mirror, chest and nightstand',
       hotspots: [
-        { x: 50, y: 58, label: 'Islamorada Panel Bed', url: '/products/islamorada-panel-bed' },
-        { x: 17, y: 62, label: 'Islamorada 1-Drawer / 2-Door Nightstand', url: '/products/islamorada-1-drawer-2-door' },
-        { x: 52, y: 80, label: 'Islamorada Bench', url: '/products/islamorada-bench' }
+        { x: 62, y: 61, label: 'Islamorada Bed', url: 'product.html?sku=B233QBED-DAPGREY' },
+        { x: 15, y: 64, label: 'Islamorada 6-Drawer / 2-Door Dresser', url: 'product.html?sku=B23336-DAPGREY' },
+        { x: 13, y: 36, label: 'Islamorada Mirror', url: 'product.html?sku=B23338-BLANC' },
+        { x: 38, y: 55, label: 'Islamorada 5 Drawer Chest', url: 'product.html?sku=B23335-DAPGREY' },
+        { x: 91, y: 69, label: 'Islamorada 1-Drawer / 2-Door Nightstand', url: 'product.html?sku=B23332-DAPGREY' }
       ]
     },
     {
       name: 'Geneva Collection',
       brand: 'Seawinds',
-      url: '/collections/geneva',
+      url: 'shop.html?collection=Geneva',
       image: 'assets/images/collection-geneva.jpg',
-      alt: 'Geneva bedroom styled with layered bedding',
+      alt: 'Geneva bedroom with storage bed, nightstands, dresser, mirror and chest',
       hotspots: [
-        { x: 40, y: 60, label: 'Geneva Bed', url: '/products/geneva-bed' }
+        { x: 50, y: 66, label: 'Geneva Storage Bed', url: 'product.html?sku=B900KBED-STORAGE-DWHITE' },
+        { x: 25, y: 52, label: 'Geneva 1 Drawer Nightstand', url: 'product.html?sku=B90032-DWHITE' },
+        { x: 87, y: 53, label: 'Geneva 6 Drawer Dresser', url: 'product.html?sku=B90036-DWHITE' },
+        { x: 85, y: 27, label: 'Geneva Rectangular Mirror', url: 'product.html?sku=B90038-DWHITE' },
+        { x: 5, y: 46, label: 'Geneva 5 Drawer Chest', url: 'product.html?sku=B90035-DWHITE' }
       ]
     },
     {
       name: 'Point Breeze Collection',
       brand: 'Finn & Louise',
-      url: '/collections/point-breeze',
+      url: 'shop.html?collection=Point Breeze',
       image: 'assets/images/collection-point-breeze.jpg',
-      alt: 'Point Breeze storage bed with drawers open',
+      alt: 'Point Breeze bedroom with storage bed, chest, nightstands and dresser with mirror',
       hotspots: [
-        { x: 60, y: 55, label: 'Point Breeze Storage Bed', url: '/products/point-breeze-storage-bed' }
+        { x: 48, y: 76, label: 'Point Breeze Storage Bed', url: 'product.html?sku=FL-B650QBED-STORAGE-FRESHWHITE' },
+        { x: 15, y: 60, label: 'Point Breeze 5 Drawer Chest', url: 'product.html?sku=FL-B65035-FRESHWHITE' },
+        { x: 32, y: 61, label: 'Point Breeze 2 Drawer Nightstand', url: 'product.html?sku=FL-B65032-FRESHWHITE' },
+        { x: 88, y: 72, label: 'Point Breeze 7 Drawer Dresser', url: 'product.html?sku=FL-B65036-FRESHWHITE' },
+        { x: 93, y: 39, label: 'Point Breeze Mirror', url: 'product.html?sku=FL-B65038-FRESHWHITE' }
       ]
     },
     {
       name: 'Manhattan Valley Collection',
       brand: 'Finn & Louise',
-      url: '/collections/manhattan-valley',
+      url: 'shop.html?collection=Manhattan Valley',
       image: 'assets/images/collection-manhattan-valley.jpg',
-      alt: 'Manhattan Valley bedroom with walnut-toned bed',
+      alt: 'Manhattan Valley bedroom in chestnut with bed, chest, nightstands, dresser and round mirror',
       hotspots: [
-        { x: 45, y: 70, label: 'Manhattan Valley Bed', url: '/products/manhattan-valley-bed' }
+        { x: 50, y: 75, label: 'Manhattan Valley Bed', url: 'product.html?sku=FL-B975QBED-VINTAGECHESTNUT' },
+        { x: 17, y: 60, label: 'Manhattan Valley 5 Drawer Chest', url: 'product.html?sku=FL-B97535-VINTAGECHESTNUT' },
+        { x: 68, y: 62, label: 'Manhattan Valley 3 Drawer Nightstand', url: 'product.html?sku=FL-B97533-VINTAGECHESTNUT' },
+        { x: 86, y: 70, label: 'Manhattan Valley 6 Drawer Dresser', url: 'product.html?sku=FL-B97536-VINTAGECHESTNUT' },
+        { x: 92, y: 41, label: 'Manhattan Valley Round Mirror', url: 'product.html?sku=998f67f4bf5d' }
       ]
     }
   ],
@@ -154,11 +170,50 @@ window.LINEAGE_DATA = {
   // URL: add or remove products in that category in BigCommerce and the menu and the shop page
   // (shop.html?list=coming-soon) update on their own. The category must stay visible, and its URL
   // must match `category` here. `image` (optional) replaces the shop banner photo on that page.
-  // Straight-on photos for the bedroom page's studio ("Build your bedroom"), by SKU, for products
-  // whose BigCommerce gallery has no front view. A transparent PNG of just the piece.
+  // Straight-on photos for the bedroom studio and collection cards (bedroom.html,
+  // bedroom-collection.html), by SKU, for products whose BigCommerce gallery has no straight-on
+  // view, or (beds) none made up. The piece on white or on a transparent background. A bed with no
+  // straight-on photo here or in its gallery isn't shown (the studio is straight-on throughout).
   frontPhotos: {
-    'B622QBED-STORAGE-DRIFTWOOD': 'assets/images/cape-may-storage-bed-front.png' // Cape May Storage Bed, made up
+    'B622QBED-STORAGE-DRIFTWOOD': 'assets/images/cape-may-storage-bed-front.png', // Cape May Storage Bed, made up
+    'FL-B650QBED-STORAGE-FRESHWHITE': 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1600w/products/254/1495/ScreenShot2025-02-21at4.28.01PM__37522.1791982785.png', // Point Breeze Storage Bed, made up
+    // No made-up photo in BigCommerce: the bed's own straight-on photo, with the bedding from the
+    // Point Breeze photo above laid in behind its footboard (the frame itself is unchanged)
+    'B277QBED-WW': 'assets/images/surfside-bed-made-up.webp', // Surfside Bed
+    'B818QBED-BLANCE': 'assets/images/monaco-blanc-bed-made-up.webp', // Monaco Blanc Bed
+    'B818QBED-BLEU': 'assets/images/monaco-bleu-bed-made-up.webp', // Monaco Bleu Bed
+    'B233QBED-DAPGREY': 'assets/images/islamorada-bed-made-up.webp', // Islamorada Bed
+    'B863QBED-BSAND/WW': 'assets/images/captiva-island-bed-made-up.webp', // Captiva Island Bed
+    'B533QBED-NAT': 'assets/images/maui-bed-made-up.webp', // Maui Bed
+    // Straight-on photos the gallery has but on a transparent background, which the automatic
+    // search for a front view doesn't pick up
+    'B81838-BLANC': 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1280w/products/193/1972/ScreenShot2025-02-27at3.55.15PM__65819.1791983387.png', // Monaco Blanc Mirror
+    'B23332-DAPGREY': 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1280w/products/381/391/Untitled-900-x-1100-px-11__07825.1774040052.png', // Islamorada Nightstand
+    'B23335-DAPGREY': 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1280w/products/379/389/Untitled-900-x-1100-px-13__11186.1774040051.png', // Islamorada 5 Drawer Chest
+    'B23334-DAPGREY': 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1280w/products/380/390/Untitled-900-x-1100-px-10__22633.1774040051.png', // Islamorada 4 Drawer Chest
+    'B53338-NAT': 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1280w/products/366/559/b53338-nat_6324f400-5d60-4241-be3c-32e7138f6875__45540.1791981795.jpg', // Maui Round Mirror (the gallery's first straight-on photo is its back)
+    'B81832-BLEU': 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1280w/products/365/567/b81832-bleu-2_d8aa9258-f0ac-4d6d-8d37-0de6aef074ac__77787.1791981802.jpg' // Monaco Bleu Nightstand (the gallery's other front views are close-ups)
   },
+
+  // Real widths in inches (from the dimension drawings in each product's BigCommerce gallery), so
+  // the bedroom studio shows every piece at its true size next to the bed. Beds: the headboard's
+  // width. A piece not listed uses a typical size for its type (pieceSizeDefaults).
+  pieceSizes: {
+    // Point Breeze
+    'FL-B650QBED-STORAGE-FRESHWHITE': 67.5, 'FL-B650QBED-FRESHWHITE': 67.5,
+    'FL-B65031-FRESHWHITE': 24, 'FL-B65032-FRESHWHITE': 24, 'FL-B65036-FRESHWHITE': 68, 'FL-B65035-FRESHWHITE': 44,
+    // Surfside
+    'B277QBED-WW': 66.5, 'B27732-WW': 22, 'B27736-WW': 58, 'B27738-WW': 32, 'B27735-WW': 32,
+    // Monaco (Blanc and Bleu)
+    'B818QBED-BLANCE': 69, 'B818QBED-BLEU': 69,
+    'B81832-BLANC': 24, 'B81837-BLANC': 58, 'B81838-BLANC': 32, 'B81835-BLANC': 32,
+    'B81832-BLEU': 24, 'B81837-BLEU': 58, 'B81838-BLEU': 32, 'B81835-BLEU': 32,
+    // Islamorada
+    'B233QBED-DAPGREY': 66.5, 'B23332-DAPGREY': 22, 'B23336-DAPGREY': 58, 'B23338-BLANC': 32, 'B23335-DAPGREY': 32, 'B23334-DAPGREY': 32,
+    // Maui and Captiva Island
+    'B533QBED-NAT': 66, 'B53338-NAT': 36, 'B863QBED-BSAND/WW': 67
+  },
+  pieceSizeDefaults: { Beds: 66, Nightstands: 24, Dressers: 62, Mirrors: 34, Chests: 36 },
 
   // Room photos for the living room page's collections strip (living-room.html), one per
   // collection, from the products' BigCommerce galleries. A collection not listed here gets the
@@ -290,6 +345,49 @@ window.LINEAGE_DATA = {
     lamps: ['LUX-3925-WHITE-USB', 'LUX-3923-WHITE-USB', 'LUX-C02-WHITE-USB', 'LUX-141-WHITE-USB', 'LUX-52205-NAT-USB']
   },
 
+  // Cabinet beds page (cabinet-beds.html). hero: a living room (day) that unfolds into a guest
+  // room (night). unfold: the bed photographed at each stage, per finish. details: close-ups for
+  // the magnifier. rooms: living room / guest room pairs for the Day / Night switch.
+  // Cabinet beds page (cabinet-beds.html, js/cabinet-beds.js). Every photo is a real product photo;
+  // the film is the wide shot from assets/Videos/CabinetBed_InstructionalVideo_Female.mp4.
+  cabinetBedsPage: {
+    hero: { day: 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1600w/products/248/2524/B23356-DAPGREY_13__28998.1791984083.jpg', night: 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1600w/products/248/2527/B23356-DAPGREY_10__32440.1791984087.jpg' },
+    // Real footage, scrubbed by scrolling; chapters in seconds of the clip
+    film: {
+      src: 'assets/Videos/cabinet-bed-opening.mp4',
+      poster: 'assets/images/cabinet-bed-opening-poster.jpg',
+      chapters: [
+        { at: 0, title: 'Lift the lid.' },
+        { at: 6, title: 'Fold out the bed.' },
+        { at: 12, title: 'Open the mattress.' },
+        { at: 15, title: 'Good night.' }
+      ]
+    },
+    // 24 hours with one cabinet bed; `time` is 24-hour "HH:MM", `night` turns the page dark
+    day: [
+      { time: '07:30', title: 'Coffee. It\'s a cabinet.', text: 'Shutter doors, a weathered top and a drawer below. Nothing gives it away.', image: 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1280w/products/248/2522/B23356-DAPGREY_15__09442.1791984080.jpg' },
+      { time: '13:00', title: 'The TV sits on top.', text: 'By day it works as hard as any media cabinet.', image: 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1280w/products/248/2523/B23356-DAPGREY_14__00929.1791984081.jpg' },
+      { time: '18:30', title: 'Friends over.', text: 'Drinks on top, conversation around it. Still just a cabinet.', image: 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1280w/products/247/2508/B27756-WW_12__30567.1791984056.jpg' },
+      { time: '21:45', title: 'Someone stays the night.', text: 'Lift the lid and fold the bed out.', image: 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1280w/products/247/2506/B27756-WW_10__52206.1791984054.jpg', night: true },
+      { time: '22:30', title: 'A real bed.', text: 'Queen size, made up, with power and USB right at the bedside.', image: 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1280w/products/248/2527/B23356-DAPGREY_10__32440.1791984087.jpg', night: true },
+      { time: '08:00', title: 'Gone by breakfast.', text: 'Fold it back up and the living room is yours again.', image: 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1280w/products/248/2521/1__70694.1791984079.jpg' }
+    ],
+    // Hidden in plain sight: hotspots on the opened cabinet (x, y: fractions of the photo); each
+    // opens a lens on a close-up `image`, or, without one, on the photo itself magnified
+    open: 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1280w/products/248/2514/B23356-DAPGREY_4_075bd7bd-6637-4d21-afe9-026c303b1b38__00150.1791984064.png',
+    features: [
+      { x: 0.45, y: 0.2, title: 'A lid that lifts itself', text: 'Gas struts take the weight, hold the lid open while you unfold the bed, and lower it gently.', image: 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/800w/products/248/2515/B23356-DAPGREY_7__31430.1791984066.jpg' },
+      { x: 0.4, y: 0.71, title: 'A drawer for the pillows', text: 'Pillows and bedding have their own place, ready for the next guest.', image: '' },
+      { x: 0.883, y: 0.717, title: 'Power at the bedside', text: 'Two outlets and USB built into the side, for a phone and a lamp.', image: 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/800w/products/248/2520/B23356-DAPGREY_8__87797.1791984078.jpg' },
+      { x: 0.9, y: 0.42, title: 'Finished like furniture', text: 'A weathered top and shutter doors, made to sit in a living room.', image: 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/800w/products/248/2519/B23356-DAPGREY_6__26556.1791984074.jpg' }
+    ],
+    // Choose your finish
+    finishes: [
+      { sku: 'B23355-DAPGREY', name: 'Islamorada', image: 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1000w/products/248/2512/B23356-DAPGREY_1_1cf4552f-347d-48a7-8200-298a41311c53__67215.1791984061.png' },
+      { sku: 'B27755-WW', name: 'Surfside', image: 'https://cdn11.bigcommerce.com/s-ybkui2vf1q/images/stencil/1000w/products/247/2497/B27756-WW_1__17818.1791984039.png' }
+    ]
+  },
+
   // Room landing pages. The Bedroom menu tab opens `page`; when the shop shows that room
   // (shop.html?room=bedroom&type=Beds …) it uses `banner` and the room's look.
   roomPages: {
@@ -333,6 +431,7 @@ window.LINEAGE_DATA = {
     { title: 'Finn & Louise', url: 'brand-finn-louise.html', keywords: 'finn louise brand bedroom dining' },
     { title: 'Lux Lighting', url: 'brand-lux-lighting.html', keywords: 'lux lighting brand lamps table floor' },
     { title: 'Bedroom', url: 'bedroom.html', keywords: 'bedroom beds nightstands dressers chests' },
+    { title: 'Cabinet Beds', url: 'cabinet-beds.html', keywords: 'cabinet bed murphy bed guest bed fold away queen sleeper' },
     { title: 'Dining Room', url: 'dining-room.html', keywords: 'dining tables chairs' },
     { title: 'Living Room', url: 'living-room.html', keywords: 'living room sofas coffee tables' },
     { title: 'Lighting', url: 'lighting.html', keywords: 'lighting lamps table lamps' },

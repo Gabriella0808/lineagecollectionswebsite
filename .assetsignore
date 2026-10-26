@@ -6,3 +6,4 @@ wrangler.jsonc
 node_modules
 .wrangler
 workers
+assets/Videos/CabinetBed_InstructionalVideo_Female.mp4

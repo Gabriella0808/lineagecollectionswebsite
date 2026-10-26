@@ -11,7 +11,7 @@
 
   /* ---------- Header: clear at the top of the page (white on hover), solid once scrolled ---------- */
   const header = document.getElementById('siteHeader');
-  const hero = document.querySelector('.hero, .page-banner');
+  const hero = document.querySelector('.hero, .page-banner, .cb-hero');
 
   function updateHeader() {
     if (!header) return;
@@ -116,6 +116,8 @@
   const dotsEl = document.getElementById('carouselDots');
   let current = 0;
 
+  const skuOf = (url) => new URLSearchParams(String(url).split('?')[1] || '').get('sku') || '';
+
   track.innerHTML = data.collections.map((c, i) => `
     <article class="slide" aria-roledescription="slide" aria-label="${i + 1} of ${data.collections.length}">
       <img src="${c.image}" alt="${escapeHtml(c.alt)}" ${i > 1 ? 'loading="lazy"' : ''}>
@@ -124,11 +126,97 @@
         <p>/ By ${escapeHtml(c.brand)}</p>
       </a>
       ${c.hotspots.map((h) => `
-        <div class="hotspot" style="left:${h.x}%;top:${h.y}%">
+        <div class="hotspot" data-x="${h.x}" data-y="${h.y}" style="left:${h.x}%;top:${h.y}%">
           <button class="hotspot-btn" aria-label="Show ${escapeHtml(h.label)}"></button>
-          <a href="${h.url}" class="hotspot-card">${escapeHtml(h.label)} <span aria-hidden="true">&rarr;</span></a>
+          <div class="hotspot-card" data-sku="${escapeHtml(skuOf(h.url))}">
+            <a href="${h.url}" class="hs-media" tabindex="-1" aria-hidden="true"></a>
+            <div class="hs-body">
+              <a href="${h.url}" class="hs-name">${escapeHtml(h.label)}</a>
+              <p class="hs-price"></p>
+              <div class="hs-actions">
+                <button type="button" class="hs-add" disabled><span class="hs-add-text">Add to cart</span><span class="hs-added-text">Added</span></button>
+                <a href="${h.url}" class="hs-view">View &rarr;</a>
+              </div>
+            </div>
+          </div>
         </div>`).join('')}
     </article>`).join('');
+
+  // Hotspots are given as points on the photo; the photo is cropped to fill its slide (cover),
+  // so work out where each point lands, and hide any that fall outside the visible crop
+  function placeHotspots() {
+    track.querySelectorAll('.slide').forEach((slide) => {
+      const img = slide.querySelector('img');
+      const iw = img.naturalWidth;
+      const ih = img.naturalHeight;
+      if (!iw) return;
+      const bw = slide.clientWidth;
+      const bh = slide.clientHeight;
+      const k = Math.max(bw / iw, bh / ih);
+      const ox = (bw - iw * k) / 2;
+      const oy = (bh - ih * k) / 2;
+      slide.querySelectorAll('.hotspot').forEach((h) => {
+        const x = ox + (h.dataset.x / 100) * iw * k;
+        const y = oy + (h.dataset.y / 100) * ih * k;
+        h.style.left = `${x}px`;
+        h.style.top = `${y}px`;
+        h.hidden = x < 24 || x > bw - 24 || y < 24 || y > bh - 24;
+        // The card opens away from the slide's edges, so none of it is cut off
+        h.classList.toggle('is-left', x < 180);
+        h.classList.toggle('is-right', x > bw - 180);
+        h.classList.toggle('is-below', y < 220);
+      });
+    });
+  }
+  // Each hotspot's card: the product's photo, live price and Add to cart (from BigCommerce)
+  const hotspotProducts = new Map();
+  async function fillHotspots() {
+    const bc = window.LineageBC;
+    if (!bc || !bc.enabled) return;
+    const skus = [...new Set([...track.querySelectorAll('.hotspot-card[data-sku]')].map((c) => c.dataset.sku).filter(Boolean))];
+    try {
+      (await bc.productsBySku(skus)).forEach((p) => hotspotProducts.set(p.sku, p));
+    } catch (err) {
+      console.warn('Carousel: could not load hotspot products.', err);
+      return;
+    }
+    track.querySelectorAll('.hotspot-card[data-sku]').forEach((card) => {
+      const p = hotspotProducts.get(card.dataset.sku);
+      if (!p) return;
+      if (p.image) card.querySelector('.hs-media').innerHTML = `<img src="${escapeHtml(p.image)}" alt="" loading="lazy">`;
+      card.querySelector('.hs-name').textContent = p.name;
+      card.querySelector('.hs-price').textContent = p.price == null ? 'Price on request' : formatPrice(p.price, p.currency);
+      const add = card.querySelector('.hs-add');
+      add.disabled = false;
+      add.dataset.sku = p.sku;
+    });
+  }
+  fillHotspots();
+  track.addEventListener('click', (e) => {
+    const add = e.target.closest('.hs-add');
+    if (!add || !window.LineageCart) return;
+    const p = hotspotProducts.get(add.dataset.sku);
+    if (!p) return;
+    window.LineageCart.add(p, 1);
+    add.classList.add('is-added');
+    // Show "Added" for a moment, then close the card (it opens again once the pointer has left)
+    const spot = add.closest('.hotspot');
+    setTimeout(() => {
+      add.blur();
+      spot.classList.remove('is-open');
+      spot.classList.add('is-dismissed');
+      add.classList.remove('is-added');
+    }, 700);
+  });
+  track.addEventListener('pointerout', (e) => {
+    const spot = e.target.closest('.hotspot.is-dismissed');
+    if (spot && !spot.contains(e.relatedTarget)) spot.classList.remove('is-dismissed');
+  });
+
+  track.querySelectorAll('.slide img').forEach((img) => {
+    if (img.complete) placeHotspots(); else img.addEventListener('load', placeHotspots);
+  });
+  window.addEventListener('resize', placeHotspots);
 
   dotsEl.innerHTML = data.collections.map((c, i) =>
     `<button role="tab" aria-label="${escapeHtml(c.name)}" data-index="${i}"></button>`).join('');
@@ -180,63 +268,8 @@
 
   goTo(0);
 
-  /* ---------- New Intros (live from BigCommerce, saved list as fallback) ---------- */
-  const grid = document.getElementById('newIntros');
-  let introProducts = [];
-
-  function renderIntros(products) {
-    introProducts = products;
-    grid.innerHTML = products.map((p) => `
-    <article class="product-card">
-      <button type="button" class="wish-toggle" data-wish="${escapeHtml(p.sku)}" aria-pressed="false" aria-label="Save to wishlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 5.65-7 10-7 10z"/></svg></button>
-      <a href="${escapeHtml(p.url)}" class="product-media">
-        ${p.image ? `<img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy">` : ''}
-      </a>
-      <h3 class="product-name"><a href="${escapeHtml(p.url)}">${escapeHtml(p.name)}</a></h3>
-      <div class="product-meta">
-        <span class="product-price">${p.price == null ? '' : formatPrice(p.price, p.currency)}</span>
-        <button class="btn-add" data-sku="${escapeHtml(p.sku)}">Add</button>
-      </div>
-    </article>`).join('');
-  }
-
-  async function loadIntros() {
-    const bc = window.LineageBC;
-    if (!bc || !bc.enabled) { renderIntros(data.newIntros); return; }
-
-    // Placeholder cards while BigCommerce responds, so the saved list doesn't flash first.
-    grid.innerHTML = '<article class="product-card is-loading"><div class="product-media"></div></article>'.repeat(4);
-    try {
-      let skus = data.newIntroSkus || [];
-      if (data.newIntrosUrl) {
-        const res = await fetch(data.newIntrosUrl);
-        if (!res.ok) throw new Error(`New intros ${res.status}`);
-        const json = await res.json();
-        skus = Array.isArray(json) ? json : json.skus || [];
-      }
-      const products = await bc.productsBySku(skus);
-      renderIntros(products.length ? products : data.newIntros);
-    } catch (err) {
-      console.warn('New Intros: using saved products.', err);
-      renderIntros(data.newIntros);
-    }
-  }
-  loadIntros();
-
-  grid.addEventListener('click', (e) => {
-    const btn = e.target.closest('.btn-add');
-    if (!btn) return;
-    const product = introProducts.find((p) => p.sku === btn.dataset.sku);
-    if (!product || !window.LineageCart) return;
-    window.LineageCart.add(product);
-    window.LineageCart.open();
-    btn.textContent = 'Added';
-    btn.disabled = true;
-    setTimeout(() => { btn.textContent = 'Add'; btn.disabled = false; }, 1400);
-  });
-
   /* ---------- Social grid ---------- */
-  const INSTAGRAM_PROFILE = 'https://www.instagram.com/lineage_collections';
+  const INSTAGRAM_PROFILE = 'https://linktr.ee/lineage_collections'; // where the section links to
   const socialGrid = document.getElementById('socialGrid');
   const postCount = data.instagramPostCount || 6;
 
